@@ -3,226 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compact Stream | 16:9 Optimized</title>
+    <title>Generador Múltiple Audio V4</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --accent: #00d4ff;
-            --bg: #050505;
-            --surface: rgba(255, 255, 255, 0.05);
+            --bg: #000000;
+            --card: rgba(255, 255, 255, 0.07);
             --border: rgba(255, 255, 255, 0.1);
         }
 
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; overflow: hidden; }
 
-        /* --- CONFIGURACIÓN (GENERADOR) --- */
+        /* --- SECCIÓN ADMINISTRADOR --- */
         #admin { 
             display: flex; justify-content: center; align-items: center; height: 100vh; padding: 20px;
-            background: radial-gradient(circle at center, #111, #000); overflow-y: auto;
+            background: #0a0a0a; overflow-y: auto;
         }
-        .admin-box { background: #111; padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; border: 1px solid #222; }
-        .admin-box h2 { color: var(--accent); margin: 0 0 15px; font-size: 18px; text-align: center; }
-        .field { margin-bottom: 12px; }
-        .field label { display: block; font-size: 10px; text-transform: uppercase; color: #666; margin-bottom: 5px; font-weight: 800; }
-        input { width: 100%; padding: 10px; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px; font-size: 12px; }
-        .row { display: flex; gap: 5px; margin-bottom: 5px; }
-        .btn-add { background: var(--accent); border: none; padding: 5px 12px; border-radius: 5px; font-weight: 900; cursor: pointer; }
-        .btn-del { background: #ff4444; border: none; color: #fff; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
-        .btn-go { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 8px; font-weight: 800; margin-top: 15px; cursor: pointer; }
+        .admin-box { background: #111; padding: 20px; border-radius: 12px; width: 100%; max-width: 380px; border: 1px solid #222; }
+        .field { margin-bottom: 8px; }
+        label { display: block; font-size: 9px; text-transform: uppercase; color: #555; margin-bottom: 3px; font-weight: 800; }
+        input { width: 100%; padding: 7px; background: #000; border: 1px solid #333; color: #fff; border-radius: 5px; font-size: 11px; outline: none; }
+        input:focus { border-color: var(--accent); }
+        .btn-go { width: 100%; padding: 10px; background: var(--accent); border: none; border-radius: 5px; font-weight: 800; margin-top: 10px; cursor: pointer; color: #000; font-size: 12px; }
 
-        /* --- REPRODUCTOR (VIEWER) --- */
-        #player { display: none; width: 100%; height: 100vh; position: relative; background-size: cover; background-position: center; }
-        #player::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, #000 20%, rgba(0,0,0,0.6) 100%); z-index: 1; }
-
-        .main-ui { 
-            position: relative; z-index: 10; width: 100%; max-width: 900px; 
-            padding: 20px; display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; align-items: center;
+        /* --- INTERFAZ DEL REPRODUCTOR (V4 ULTRA COMPACTA) --- */
+        #player { 
+            display: none; width: 100%; height: 100vh; position: relative; 
+            background-size: cover; background-position: center; flex-direction: column;
         }
+        #player::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, #000 65%, rgba(0,0,0,0.8) 100%); z-index: 1; }
 
-        /* Responsive Mobile */
-        @media (max-width: 768px) {
-            .main-ui { grid-template-columns: 1fr; gap: 15px; padding: 15px; text-align: center; }
-            .info-side h1 { font-size: 22px !important; }
-            .server-list { max-height: 40vh !important; }
+        .ui-content {
+            position: relative; z-index: 10; width: 100%; height: 100%;
+            display: flex; flex-direction: column; padding: 8px 15px;
+            max-width: 500px; margin: 0 auto;
         }
 
-        .info-side h1 { font-size: 32px; font-weight: 800; margin: 0 0 10px; line-height: 1; }
-        .lang-chips { display: flex; gap: 8px; margin-bottom: 15px; justify-content: inherit; }
-        .chip { 
-            background: var(--surface); border: 1px solid var(--border); padding: 6px 12px; 
-            border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 6px; 
-            font-size: 11px; font-weight: 600; transition: 0.2s;
-        }
-        .chip img { width: 16px; border-radius: 2px; }
-        .chip.active { background: var(--accent); border-color: var(--accent); color: #000; }
-
-        .server-list { display: none; flex-direction: column; gap: 8px; max-height: 60vh; overflow-y: auto; padding-right: 5px; }
-        .server-list.active { display: flex; }
+        /* TÍTULO V4: MINIMALISTA Y UNA SOLA LÍNEA */
+        header { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; }
         
-        /* Scrollbar mini */
-        .server-list::-webkit-scrollbar { width: 4px; }
-        .server-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-
-        .s-card { 
-            background: var(--surface); border: 1px solid var(--border); padding: 10px 15px; 
-            border-radius: 10px; display: flex; justify-content: space-between; align-items: center;
-            cursor: pointer; transition: 0.2s;
+        h1 { 
+            font-size: 13px; /* Tamaño reducido al máximo */
+            font-weight: 600; 
+            margin: 0 0 5px 0; 
+            color: #aaa;
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; /* Evita saltos de línea */
+            max-width: 100%;
         }
-        .s-card:hover { border-color: var(--accent); background: rgba(0,212,255,0.05); }
-        .s-info { display: flex; align-items: center; gap: 12px; }
-        .s-play { color: var(--accent); font-size: 10px; }
-        .s-name { font-size: 13px; font-weight: 700; }
-        .s-tag { font-size: 9px; opacity: 0.5; text-transform: uppercase; }
-        .hd-tag { font-size: 8px; background: #fff; color: #000; padding: 2px 5px; border-radius: 3px; font-weight: 900; }
+        
+        /* Selectores de Idioma en línea */
+        .lang-flex { display: flex; gap: 5px; }
+        .lang-btn { 
+            background: var(--card); border: 1px solid var(--border); padding: 4px 8px; 
+            border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 4px; 
+            font-size: 8px; font-weight: 800; transition: 0.2s;
+        }
+        .lang-btn img { width: 11px; height: 8px; border-radius: 1px; }
+        .lang-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
 
-        /* Capa de Video */
-        #video-wrap { 
+        .label-mini { font-size: 7px; color: #444; font-weight: 900; text-transform: uppercase; margin: 6px 0 4px; letter-spacing: 0.5px; }
+
+        /* Lista de Servidores Slim V4 */
+        .server-container { 
+            display: none; flex-direction: column; gap: 4px; 
+            overflow-y: auto; flex-grow: 1; padding-bottom: 10px;
+            scrollbar-width: none;
+        }
+        .server-container.active { display: flex; }
+        .server-container::-webkit-scrollbar { display: none; }
+
+        .server-card { 
+            background: rgba(15, 15, 15, 0.9); border: 1px solid var(--border); 
+            padding: 6px 12px; border-radius: 5px; 
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; min-height: 40px;
+        }
+        .server-card:active { transform: scale(0.98); background: var(--accent); color: #000; }
+        
+        .s-box { display: flex; align-items: center; gap: 8px; }
+        .s-play { color: var(--accent); font-size: 8px; }
+        .s-name { font-size: 11px; font-weight: 700; }
+        .s-desc { font-size: 7px; opacity: 0.5; text-transform: uppercase; display: block; margin-top: -2px; }
+        
+        .hd-tag { font-size: 7px; border: 1px solid rgba(255,255,255,0.15); padding: 1px 4px; border-radius: 2px; font-weight: 800; color: #fff; }
+
+        /* Video Layer */
+        #video-view { 
             position: absolute; inset: 0; background: #000; z-index: 100; 
-            display: none; opacity: 0; transition: opacity 0.4s;
+            display: none; opacity: 0; transition: opacity 0.3s;
         }
-        #video-wrap.active { display: block; opacity: 1; }
+        #video-view.active { display: block; opacity: 1; }
         iframe { width: 100%; height: 100%; border: none; }
 
-        #close-vid {
-            position: absolute; top: 15px; right: 15px; width: 35px; height: 35px;
+        #btn-close {
+            position: absolute; top: 10px; right: 10px; width: 28px; height: 28px;
             background: rgba(0,0,0,0.6); border: 1px solid var(--border); border-radius: 50%;
             color: #fff; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; z-index: 200; font-weight: bold; font-size: 14px;
+            cursor: pointer; z-index: 200; font-size: 11px;
         }
-        #close-vid:hover { background: var(--accent); color: #000; }
     </style>
 </head>
 <body>
 
-    <!-- GENERADOR COMPACTO -->
+    <!-- GENERADOR V4 -->
     <div id="admin">
         <div class="admin-box">
-            <h2>Stream Compact V2</h2>
+            <h2 style="margin:0 0 12px; color:var(--accent); font-size:14px; text-align:center">GENERADOR MULTIAUDIO V4</h2>
+            <div class="field"><label>Título</label><input type="text" id="t-in" placeholder="Nombre de la obra"></div>
+            <div class="field"><label>Imagen Fondo (URL)</label><input type="text" id="bg-in" placeholder="https://..."></div>
             <div class="field">
-                <label>Título Película</label>
-                <input type="text" id="in-title" placeholder="Ej: Batman">
+                <div style="display:flex; justify-content:space-between"><label>Audio Latino</label><button onclick="addInput('lat')" style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight:bold">+</button></div>
+                <div id="cont-lat"><input type="text" class="lat-val" placeholder="Enlace Servidor"></div>
             </div>
             <div class="field">
-                <div style="display:flex; justify-content:space-between">
-                    <label>Links Latino</label>
-                    <button class="btn-add" onclick="add('lat')">+</button>
-                </div>
-                <div id="box-lat"><input type="text" class="lat-u" placeholder="URL"></div>
+                <div style="display:flex; justify-content:space-between"><label>Audio Japonés</label><button onclick="addInput('jap')" style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight:bold">+</button></div>
+                <div id="cont-jap"><input type="text" class="jap-val" placeholder="Enlace Servidor"></div>
             </div>
-            <div class="field">
-                <div style="display:flex; justify-content:space-between">
-                    <label>Links Japonés</label>
-                    <button class="btn-add" onclick="add('jap')">+</button>
-                </div>
-                <div id="box-jap"><input type="text" class="jap-u" placeholder="URL"></div>
-            </div>
-            <div class="field">
-                <label>URL Imagen Fondo</label>
-                <input type="text" id="in-bg" placeholder="https://...">
-            </div>
-            <button class="btn-go" onclick="generate()">GENERAR LINK</button>
-            <div id="out" style="display:none; margin-top:15px">
-                <input type="text" id="res" readonly style="margin-bottom:5px; font-size:10px; text-align:center">
-                <button class="btn-go" style="background:#fff; color:#000" onclick="copy()">COPIAR</button>
+            <button class="btn-go" onclick="build()">GENERAR ENLACE FINAL</button>
+            <div id="out-box" style="display:none; margin-top:10px">
+                <input type="text" id="final-url" readonly style="font-size:9px">
+                <button class="btn-go" style="background:#fff" onclick="copyUrl()">COPIAR LINK</button>
             </div>
         </div>
     </div>
 
-    <!-- PLAYER COMPACTO -->
+    <!-- PLAYER V4 -->
     <div id="player">
-        <div id="close-vid" style="display:none" onclick="stopVid()">✕</div>
-        <div class="main-ui">
-            <div class="info-side">
-                <h1 id="m-title">Título</h1>
-                <div class="lang-chips">
-                    <div class="chip" id="c-lat" onclick="sel('lat')"><img src="https://flagcdn.com/w40/mx.png"> <span>Latino</span></div>
-                    <div class="chip" id="c-jap" onclick="sel('jap')"><img src="https://flagcdn.com/w40/jp.png"> <span>Japonés</span></div>
+        <div id="btn-close" style="display:none" onclick="killVid()">✕</div>
+        
+        <div class="ui-content">
+            <header>
+                <h1 id="movie-title">Título</h1>
+                <div class="lang-flex">
+                    <div class="lang-btn" id="l-lat" onclick="tab('lat')"><img src="https://flagcdn.com/w40/mx.png"> <span>LATINO</span></div>
+                    <div class="lang-btn" id="l-jap" onclick="tab('jap')"><img src="https://flagcdn.com/w40/jp.png"> <span>JAPONÉS</span></div>
                 </div>
-                <p style="font-size:11px; color:#666; font-weight:600; letter-spacing:1px">ELIGE UN SERVIDOR PARA REPRODUCIR</p>
-            </div>
+            </header>
             
-            <div class="list-side">
-                <div id="l-lat" class="server-list"></div>
-                <div id="l-jap" class="server-list"></div>
-            </div>
+            <div class="label-mini">Servidores disponibles:</div>
+            
+            <div id="list-lat" class="server-container"></div>
+            <div id="list-jap" class="server-container"></div>
         </div>
 
-        <div id="video-wrap">
-            <iframe id="ifr" src="" allowfullscreen allow="autoplay"></iframe>
+        <div id="video-view">
+            <iframe id="main-ifr" src="" allowfullscreen allow="autoplay"></iframe>
         </div>
     </div>
 
 <script>
-    function add(l) {
+    function addInput(l) {
         const d = document.createElement('div');
-        d.className = 'row';
-        d.innerHTML = `<input type="text" class="${l}-u" placeholder="URL"><button class="btn-del" onclick="this.parentElement.remove()">✕</button>`;
-        document.getElementById('box-'+l).appendChild(d);
+        d.style.display = 'flex'; d.style.gap = '4px'; d.style.marginTop = '4px';
+        d.innerHTML = `<input type="text" class="${l}-val" placeholder="Enlace"><button onclick="this.parentElement.remove()" style="background:#333; border:none; color:#fff; border-radius:4px; padding:0 6px; font-size:10px">✕</button>`;
+        document.getElementById('cont-'+l).appendChild(d);
     }
 
-    const p = new URLSearchParams(window.location.search);
-    const d = p.get('d');
+    const up = new URLSearchParams(window.location.search);
+    const uv = up.get('v');
 
-    if(d) {
+    if(uv) {
         document.getElementById('admin').style.display='none';
         document.getElementById('player').style.display='flex';
         try {
-            const data = JSON.parse(decodeURIComponent(escape(atob(d))));
-            document.getElementById('m-title').innerText = data.t || "MOVIE";
-            if(data.bg) document.getElementById('player').style.backgroundImage = `url('${data.bg}')`;
+            const d = JSON.parse(decodeURIComponent(escape(atob(uv))));
+            document.getElementById('movie-title').innerText = d.t || "MOVIE";
+            if(d.bg) document.getElementById('player').style.backgroundImage = `url('${d.bg}')`;
             
             ['lat','jap'].forEach(l => {
-                const links = data[l].filter(u => u);
+                const links = d[l].filter(u => u);
                 if(links.length > 0) {
-                    document.getElementById('c-'+l).style.display = 'flex';
-                    const list = document.getElementById('l-'+l);
-                    links.forEach((u, i) => {
-                        const div = document.createElement('div');
-                        div.className = 's-card';
-                        div.onclick = () => {
-                            document.getElementById('ifr').src = u;
-                            document.getElementById('video-wrap').classList.add('active');
-                            document.getElementById('close-vid').style.display = 'flex';
+                    const box = document.getElementById('list-'+l);
+                    links.forEach((url, i) => {
+                        const card = document.createElement('div');
+                        card.className = 'server-card';
+                        card.onclick = () => {
+                            document.getElementById('main-ifr').src = url;
+                            document.getElementById('video-view').classList.add('active');
+                            document.getElementById('btn-close').style.display = 'flex';
                         };
-                        div.innerHTML = `
-                            <div class="s-info">
+                        card.innerHTML = `
+                            <div class="s-box">
                                 <span class="s-play">▶</span>
-                                <div class="s-name">Opción ${i+1} <br><span class="s-tag">${l=='lat'?'Latino':'Original'}</span></div>
+                                <div>
+                                    <span class="s-name">Opción ${i+1}</span>
+                                    <span class="s-desc">${l=='lat'?'Latino':'Subtitulado'}</span>
+                                </div>
                             </div>
                             <span class="hd-tag">1080P</span>
                         `;
-                        list.appendChild(div);
+                        box.appendChild(card);
                     });
-                } else { document.getElementById('c-'+l).style.display = 'none'; }
+                } else { document.getElementById('l-'+l).style.display = 'none'; }
             });
-            sel(data.lat[0] ? 'lat' : 'jap');
+            tab(d.lat[0] ? 'lat' : 'jap');
         } catch(e){}
     }
 
-    function sel(l) {
-        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.server-list').forEach(ls => ls.classList.remove('active'));
-        document.getElementById('c-'+l).classList.add('active');
+    function tab(l) {
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.server-container').forEach(g => g.classList.remove('active'));
         document.getElementById('l-'+l).classList.add('active');
+        document.getElementById('list-'+l).classList.add('active');
     }
 
-    function generate() {
-        const get = c => Array.from(document.querySelectorAll(c)).map(i => i.value.trim());
-        const data = { t: document.getElementById('in-title').value, lat: get('.lat-u'), jap: get('.jap-u'), bg: document.getElementById('in-bg').value };
-        const enc = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-        document.getElementById('res').value = window.location.origin + window.location.pathname + "?d=" + enc;
-        document.getElementById('out').style.display = 'block';
+    function build() {
+        const gV = c => Array.from(document.querySelectorAll(c)).map(i => i.value.trim());
+        const d = { t: document.getElementById('t-in').value, bg: document.getElementById('bg-in').value, lat: gV('.lat-val'), jap: gV('.jap-val') };
+        const e = btoa(unescape(encodeURIComponent(JSON.stringify(d))));
+        document.getElementById('final-url').value = window.location.origin + window.location.pathname + "?v=" + e;
+        document.getElementById('out-box').style.display = 'block';
     }
 
-    function copy() {
-        const i = document.getElementById('res'); i.select(); document.execCommand('copy');
+    function copyUrl() { 
+        const r = document.getElementById('final-url'); 
+        r.select(); 
+        document.execCommand('copy'); 
     }
-
-    function stopVid() {
-        document.getElementById('video-wrap').classList.remove('active');
-        document.getElementById('ifr').src = "";
-        document.getElementById('close-vid').style.display = 'none';
+    
+    function killVid() { 
+        document.getElementById('video-view').classList.remove('active'); 
+        document.getElementById('main-ifr').src = ""; 
+        document.getElementById('btn-close').style.display = 'none';
     }
 </script>
 </body>
