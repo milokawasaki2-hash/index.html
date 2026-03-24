@@ -18,143 +18,141 @@
             background-color: var(--bg-dark);
             color: #fff; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             overflow: hidden;
+            user-select: none;
         }
 
-        /* --- GENERADOR (MÁS GRANDE Y ADAPTABLE) --- */
+        /* --- GENERADOR (MÁS GRANDE PARA PC/CELULAR) --- */
         #ui-generator {
             display: flex; justify-content: center; align-items: center;
-            height: 100vh; background: #050505; overflow-y: auto; padding: 20px; box-sizing: border-box;
+            height: 100vh; background: #050505; overflow-y: auto; padding: 15px; box-sizing: border-box;
         }
         .card { 
-            background: #000; padding: 30px; border-radius: 16px; border: 1px solid #1a1a1a; 
-            width: 100%; max-width: 600px; /* Aumentado de 450px a 600px */
-            box-shadow: 0 0 60px rgba(0,0,0,0.9);
+            background: #000; padding: 35px 25px; border-radius: 20px; border: 1px solid #1a1a1a; 
+            width: 100%; max-width: 650px; 
+            box-shadow: 0 0 80px rgba(0,0,0,0.9);
         }
-        .section-group { margin-bottom: 15px; background: #080808; padding: 15px; border-radius: 10px; border: 1px solid #111; }
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .section-label { color: var(--neon-blue); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; }
+        .section-group { margin-bottom: 18px; background: #080808; padding: 18px; border-radius: 12px; border: 1px solid #111; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .section-label { color: var(--neon-blue); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; }
         
-        .btn-add { background: var(--neon-blue); border: none; color: #000; border-radius: 6px; padding: 4px 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .input-list { display: flex; flex-direction: column; gap: 8px; }
-        .input-row { display: flex; gap: 8px; }
-        .btn-del { background: #ff3333; border: none; color: white; border-radius: 6px; padding: 0 12px; cursor: pointer; font-size: 14px; }
+        .btn-add { background: var(--neon-blue); border: none; color: #000; border-radius: 8px; padding: 5px 15px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .input-list { display: flex; flex-direction: column; gap: 10px; }
+        .input-row { display: flex; gap: 10px; }
+        .btn-del { background: #ff3333; border: none; color: white; border-radius: 8px; padding: 0 15px; cursor: pointer; font-size: 16px; }
 
         input { 
-            flex: 1; padding: 12px 15px; background: #000; border: 1px solid #222; 
-            border-radius: 8px; color: #fff; font-size: 13px; outline: none; 
-            transition: border 0.3s;
+            flex: 1; padding: 14px 18px; background: #000; border: 1px solid #222; 
+            border-radius: 10px; color: #fff; font-size: 14px; outline: none; 
+            transition: 0.3s;
         }
-        input:focus { border-color: var(--neon-blue); }
+        input:focus { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(0, 212, 255, 0.2); }
 
         .btn-main { 
-            width: 100%; padding: 16px; background: var(--neon-blue); border: none; 
-            font-weight: 800; border-radius: 8px; cursor: pointer; margin-top: 15px; 
-            text-transform: uppercase; font-size: 12px; color: #000; letter-spacing: 1px;
+            width: 100%; padding: 18px; background: var(--neon-blue); border: none; 
+            font-weight: 800; border-radius: 10px; cursor: pointer; margin-top: 20px; 
+            text-transform: uppercase; font-size: 13px; color: #000; letter-spacing: 1.5px;
         }
 
-        /* --- PLAYER INTERFACE (SE MANTIENE IGUAL) --- */
+        /* --- PLAYER INTERFACE --- */
         #ui-player {
             display: none; width: 100%; height: 100vh;
             justify-content: center; align-items: center;
             position: relative; background-size: cover; background-position: center;
         }
-        #overlay-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.95) 100%); z-index: 1; }
-        #content-wrapper { z-index: 10; width: 90%; max-width: 360px; text-align: center; }
+        #overlay-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.9) 100%); z-index: 1; }
+        #content-wrapper { z-index: 10; width: 90%; max-width: 380px; text-align: center; }
 
-        .tabs-audio { display: flex; gap: 6px; margin-bottom: 12px; justify-content: center; flex-wrap: wrap; }
-        .tab-btn { cursor: pointer; text-align: center; opacity: 0.3; transition: 0.3s; min-width: 40px; display: none; }
+        .tabs-audio { display: flex; gap: 8px; margin-bottom: 15px; justify-content: center; flex-wrap: wrap; }
+        .tab-btn { cursor: pointer; text-align: center; opacity: 0.4; transition: 0.3s; min-width: 45px; display: none; }
         .tab-btn.active { opacity: 1; transform: scale(1.1); }
-        .tab-btn img { width: 24px; height: 16px; border-radius: 2px; display: block; margin: 0 auto 3px; }
-        .tab-btn span { font-size: 7px; font-weight: 800; text-transform: uppercase; color: #fff; }
+        .tab-btn img { width: 28px; height: 18px; border-radius: 3px; display: block; margin: 0 auto 4px; }
+        .tab-btn span { font-size: 8px; font-weight: 800; text-transform: uppercase; color: #fff; }
 
-        .server-list { display: none; flex-direction: column; gap: 4px; max-height: 55vh; overflow-y: auto; padding: 2px; scrollbar-width: none; }
+        .server-list { display: none; flex-direction: column; gap: 6px; max-height: 50vh; overflow-y: auto; padding: 5px; scrollbar-width: none; }
         .server-list.active { display: flex; }
 
         .server-item {
             background: var(--card-bg);
-            border-radius: 4px; padding: 7px 12px;
+            border-radius: 6px; padding: 10px 15px;
             display: flex; align-items: center;
-            gap: 10px; cursor: pointer;
+            gap: 12px; cursor: pointer;
             transition: 0.2s; border: 1px solid rgba(255, 255, 255, 0.05);
         }
         .server-item:hover { background: var(--item-hover); border-color: var(--neon-blue); }
-        .play-icon { color: var(--neon-blue); font-size: 9px; opacity: 0.8; }
-        .server-info h4 { margin: 0; font-size: 9px; font-weight: 700; color: #fff; }
-        .server-info p { margin: 0; font-size: 7px; color: #555; text-transform: uppercase; }
+        .play-icon { color: var(--neon-blue); font-size: 10px; }
+        .server-info h4 { margin: 0; font-size: 11px; font-weight: 700; color: #fff; }
+        .server-info p { margin: 0; font-size: 8px; color: #777; text-transform: uppercase; }
 
-        /* VIDEO CONTAINER (CORREGIDO PARA FULLSCREEN) */
+        /* VIDEO CONTAINER FULL SCREEN FIX */
         #video-container { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             opacity: 0; visibility: hidden; z-index: 1000; background: #000; 
         }
         #video-container.active { opacity: 1; visibility: visible; }
-        
-        /* IFRAME CON PERMISOS TOTALES */
         #main-ifr { width: 100%; height: 100%; border: none; }
 
+        /* BOTÓN MENÚ DINÁMICO */
         #btn-back { 
-            position: absolute; top: 20px; right: 20px; 
-            background: rgba(0,0,0,0.8); color: #fff; 
+            position: absolute; top: 25px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.8); color: var(--neon-blue); 
             border: 1px solid var(--neon-blue); 
-            padding: 8px 16px; border-radius: 6px; 
+            padding: 10px 30px; border-radius: 30px; 
             cursor: pointer; z-index: 2000; 
-            font-size: 10px; font-weight: 900; 
-            text-transform: uppercase; 
-            transition: 0.3s;
-            opacity: 0; display: none;
+            font-size: 12px; font-weight: 900; 
+            text-transform: uppercase; letter-spacing: 2px;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0; pointer-events: none;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
         }
-        #btn-back.visible { opacity: 1; display: block; }
+        #btn-back.visible { opacity: 1; pointer-events: auto; top: 35px; }
 
-        #box-link { display:none; margin-top:10px; border:1px solid #222; padding:10px; background: #050505; border-radius: 6px; }
+        #box-link { display:none; margin-top:15px; border:1px solid #222; padding:15px; background: #050505; border-radius: 10px; }
         ::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
 
-    <!-- GENERADOR MEJORADO -->
+    <!-- GENERADOR -->
     <div id="ui-generator">
         <div class="card">
-            <h2 style="text-align:center; color:var(--neon-blue); margin-top:0; font-size: 20px; margin-bottom: 25px;">GENERADOR MÚLTIPLE AUDIO V4</h2>
+            <h2 style="text-align:center; color:var(--neon-blue); margin-top:0; font-size: 22px; margin-bottom: 30px; letter-spacing: 1px;">GENERADOR MÚLTIPLE V4</h2>
             
-            <div style="max-height: 50vh; overflow-y: auto; padding-right: 10px; margin-bottom: 20px;">
-                <!-- LATINO -->
+            <div style="max-height: 55vh; overflow-y: auto; padding-right: 8px; margin-bottom: 20px;">
                 <div class="section-group">
-                    <div class="section-header"><span class="section-label">🇲🇽 Audio Latino</span><button class="btn-add" onclick="addInput('lat')">+</button></div>
-                    <div id="cont-lat" class="input-list"><input type="text" class="lat-in" placeholder="Enlace del servidor"></div>
+                    <div class="section-header"><span class="section-label">🇲🇽 Latino</span><button class="btn-add" onclick="addInput('lat')">+</button></div>
+                    <div id="cont-lat" class="input-list"><input type="text" class="lat-in" placeholder="Pegar enlace aquí"></div>
                 </div>
-                <!-- JAPONÉS -->
                 <div class="section-group">
-                    <div class="section-header"><span class="section-label">🇯🇵 Audio Japonés</span><button class="btn-add" onclick="addInput('jap')">+</button></div>
-                    <div id="cont-jap" class="input-list"><input type="text" class="jap-in" placeholder="Enlace del servidor"></div>
+                    <div class="section-header"><span class="section-label">🇯🇵 Japonés</span><button class="btn-add" onclick="addInput('jap')">+</button></div>
+                    <div id="cont-jap" class="input-list"><input type="text" class="jap-in" placeholder="Pegar enlace aquí"></div>
                 </div>
-                <!-- CASTELLANO -->
                 <div class="section-group">
                     <div class="section-header"><span class="section-label">🇪🇸 Castellano</span><button class="btn-add" onclick="addInput('cas')">+</button></div>
-                    <div id="cont-cas" class="input-list"><input type="text" class="cas-in" placeholder="Enlace del servidor"></div>
+                    <div id="cont-cas" class="input-list"><input type="text" class="cas-in" placeholder="Pegar enlace aquí"></div>
                 </div>
-                <!-- INGLÉS -->
                 <div class="section-group">
                     <div class="section-header"><span class="section-label">🇺🇸 Inglés</span><button class="btn-add" onclick="addInput('ing')">+</button></div>
-                    <div id="cont-ing" class="input-list"><input type="text" class="ing-in" placeholder="Enlace del servidor"></div>
+                    <div id="cont-ing" class="input-list"><input type="text" class="ing-in" placeholder="Pegar enlace aquí"></div>
                 </div>
                 <div class="section-group">
-                    <span class="section-label" style="display:block; margin-bottom: 8px;">Imagen de Fondo (URL)</span>
-                    <input type="text" id="bg-in" placeholder="https://ejemplo.com/poster.jpg" style="width: 100%; box-sizing: border-box;">
+                    <span class="section-label" style="display:block; margin-bottom: 10px;">URL Imagen de Fondo</span>
+                    <input type="text" id="bg-in" placeholder="https://tu-imagen.jpg" style="width: 100%; box-sizing: border-box;">
                 </div>
             </div>
             
-            <button class="btn-main" onclick="buildLink()">GENERAR ENLACE FINAL</button>
+            <button class="btn-main" onclick="buildLink()">GENERAR REPRODUCTOR</button>
             <div id="box-link">
-                <input type="text" id="out-url" readonly style="margin-bottom: 10px; font-size: 11px; color: var(--neon-blue); text-align: center; width: 100%; box-sizing: border-box;">
-                <button onclick="copyLink()" style="width:100%; background:var(--neon-blue); border:none; padding: 12px; font-weight:bold; border-radius: 6px; color: #000; font-size: 11px; cursor:pointer;">COPIAR ENLACE</button>
+                <input type="text" id="out-url" readonly style="margin-bottom: 12px; font-size: 11px; color: var(--neon-blue); text-align: center; width: 100%; box-sizing: border-box;">
+                <button onclick="copyLink()" style="width:100%; background:var(--neon-blue); border:none; padding: 15px; font-weight:bold; border-radius: 8px; color: #000; font-size: 11px; cursor:pointer;">COPIAR ENLACE</button>
             </div>
         </div>
     </div>
 
     <!-- PLAYER -->
-    <div id="ui-player" onmousemove="triggerControls()" ontouchstart="triggerControls()">
+    <div id="ui-player">
         <div id="overlay-bg"></div>
-        <button id="btn-back" onclick="closeVideo()">Regresar al Menú</button>
+        <button id="btn-back" onclick="closeVideo()">MENÚ</button>
 
         <div id="content-wrapper">
             <div class="tabs-audio">
@@ -169,11 +167,11 @@
             <div id="list-ing" class="server-list"></div>
         </div>
 
-        <div id="video-container" onmousemove="triggerControls()" ontouchstart="triggerControls()">
-            <!-- Iframe con todos los atributos de pantalla completa activados -->
+        <div id="video-container" onmousedown="triggerControls()" ontouchstart="triggerControls()">
+            <!-- Corregido: Agregados todos los permisos de pantalla completa nativa -->
             <iframe id="main-ifr" 
                 src="" 
-                allow="autoplay; fullscreen; picture-in-picture" 
+                allow="autoplay; fullscreen; picture-in-picture; xr-spatial-tracking; encrypted-media" 
                 allowfullscreen="true" 
                 webkitallowfullscreen="true" 
                 mozallowfullscreen="true">
@@ -184,19 +182,18 @@
 <script>
     let hideTimeout;
 
+    // Mostrar el botón de menú cuando se toca cualquier parte del video o la pantalla
     function triggerControls() {
         const btn = document.getElementById('btn-back');
         const container = document.getElementById('video-container');
         
         if (container.classList.contains('active')) {
-            btn.style.display = 'block';
-            setTimeout(() => btn.classList.add('visible'), 10);
+            btn.classList.add('visible');
             
             clearTimeout(hideTimeout);
             hideTimeout = setTimeout(() => {
                 btn.classList.remove('visible');
-                setTimeout(() => { if(!btn.classList.contains('visible')) btn.style.display = 'none'; }, 400);
-            }, 3000); 
+            }, 3000); // Se oculta tras 3 segundos
         }
     }
 
@@ -268,9 +265,7 @@
 
     function closeVideo() {
         document.getElementById('video-container').classList.remove('active');
-        const btn = document.getElementById('btn-back');
-        btn.classList.remove('visible');
-        btn.style.display = 'none';
+        document.getElementById('btn-back').classList.remove('visible');
         document.getElementById('main-ifr').src = '';
         clearTimeout(hideTimeout);
     }
