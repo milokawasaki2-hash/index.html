@@ -2,233 +2,274 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Generador Múltiple Audio V4</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --accent: #00d4ff;
-            --bg: #000000;
-            --card: rgba(255, 255, 255, 0.07);
-            --border: rgba(255, 255, 255, 0.1);
+            --neon-blue: #00d4ff;
+            --bg-dark: #000000;
+            --card-bg: rgba(10, 10, 12, 0.98);
+            --item-hover: rgba(0, 212, 255, 0.15);
         }
 
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; overflow: hidden; }
-
-        /* --- SECCIÓN ADMINISTRADOR --- */
-        #admin { 
-            display: flex; justify-content: center; align-items: center; height: 100vh; padding: 20px;
-            background: #0a0a0a; overflow-y: auto;
-        }
-        .admin-box { background: #111; padding: 20px; border-radius: 12px; width: 100%; max-width: 380px; border: 1px solid #222; }
-        .field { margin-bottom: 8px; }
-        label { display: block; font-size: 9px; text-transform: uppercase; color: #555; margin-bottom: 3px; font-weight: 800; }
-        input { width: 100%; padding: 7px; background: #000; border: 1px solid #333; color: #fff; border-radius: 5px; font-size: 11px; outline: none; }
-        input:focus { border-color: var(--accent); }
-        .btn-go { width: 100%; padding: 10px; background: var(--accent); border: none; border-radius: 5px; font-weight: 800; margin-top: 10px; cursor: pointer; color: #000; font-size: 12px; }
-
-        /* --- INTERFAZ DEL REPRODUCTOR (V4 ULTRA COMPACTA) --- */
-        #player { 
-            display: none; width: 100%; height: 100vh; position: relative; 
-            background-size: cover; background-position: center; flex-direction: column;
-        }
-        #player::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, #000 65%, rgba(0,0,0,0.8) 100%); z-index: 1; }
-
-        .ui-content {
-            position: relative; z-index: 10; width: 100%; height: 100%;
-            display: flex; flex-direction: column; padding: 8px 15px;
-            max-width: 500px; margin: 0 auto;
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background-color: var(--bg-dark);
+            color: #fff; font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            touch-action: manipulation;
         }
 
-        /* TÍTULO V4: MINIMALISTA Y UNA SOLA LÍNEA */
-        header { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; }
+        /* --- GENERADOR --- */
+        #ui-generator {
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; background: #050505; overflow-y: auto; padding: 20px; box-sizing: border-box;
+        }
+        .card { 
+            background: #000; padding: 20px; border-radius: 12px; border: 1px solid #1a1a1a; 
+            width: 100%; max-width: 450px; box-shadow: 0 0 50px rgba(0,0,0,0.9);
+        }
+        .section-group { margin-bottom: 12px; background: #080808; padding: 10px; border-radius: 8px; border: 1px solid #111; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .section-label { color: var(--neon-blue); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; }
         
-        h1 { 
-            font-size: 13px; /* Tamaño reducido al máximo */
-            font-weight: 600; 
-            margin: 0 0 5px 0; 
-            color: #aaa;
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis; /* Evita saltos de línea */
-            max-width: 100%;
+        .btn-add { background: var(--neon-blue); border: none; color: #000; border-radius: 4px; padding: 2px 8px; font-size: 14px; font-weight: bold; cursor: pointer; }
+        .input-list { display: flex; flex-direction: column; gap: 5px; }
+        .input-row { display: flex; gap: 5px; }
+        .btn-del { background: #ff3333; border: none; color: white; border-radius: 4px; padding: 0 8px; cursor: pointer; font-size: 12px; }
+
+        input { 
+            flex: 1; padding: 8px 12px; background: #000; border: 1px solid #222; 
+            border-radius: 5px; color: #fff; font-size: 11px; outline: none; 
         }
+        input:focus { border-color: var(--neon-blue); }
+
+        .btn-main { 
+            width: 100%; padding: 14px; background: var(--neon-blue); border: none; 
+            font-weight: 800; border-radius: 6px; cursor: pointer; margin-top: 10px; 
+            text-transform: uppercase; font-size: 11px; color: #000; letter-spacing: 1px;
+        }
+
+        /* --- PLAYER INTERFACE --- */
+        #ui-player {
+            display: none; width: 100%; height: 100vh;
+            justify-content: center; align-items: center;
+            position: relative; background-size: cover; background-position: center;
+        }
+        #overlay-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.95) 100%); z-index: 1; }
+
+        #content-wrapper { z-index: 10; width: 90%; max-width: 360px; text-align: center; }
+
+        /* Banderas Mini */
+        .tabs-audio { display: flex; gap: 6px; margin-bottom: 12px; justify-content: center; flex-wrap: wrap; }
+        .tab-btn { cursor: pointer; text-align: center; opacity: 0.3; transition: 0.3s; min-width: 40px; display: none; }
+        .tab-btn.active { opacity: 1; transform: scale(1.1); }
+        .tab-btn img { width: 24px; height: 16px; border-radius: 2px; display: block; margin: 0 auto 3px; }
+        .tab-btn span { font-size: 7px; font-weight: 800; text-transform: uppercase; color: #fff; }
+
+        /* Lista de Servidores Mini */
+        .server-list { display: none; flex-direction: column; gap: 4px; max-height: 55vh; overflow-y: auto; padding: 2px; scrollbar-width: none; }
+        .server-list.active { display: flex; }
+
+        .server-item {
+            background: var(--card-bg);
+            border-radius: 4px; padding: 7px 12px;
+            display: flex; align-items: center;
+            gap: 10px; cursor: pointer;
+            transition: 0.2s; border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .server-item:hover { background: var(--item-hover); border-color: var(--neon-blue); }
+        .play-icon { color: var(--neon-blue); font-size: 9px; opacity: 0.8; }
         
-        /* Selectores de Idioma en línea */
-        .lang-flex { display: flex; gap: 5px; }
-        .lang-btn { 
-            background: var(--card); border: 1px solid var(--border); padding: 4px 8px; 
-            border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 4px; 
-            font-size: 8px; font-weight: 800; transition: 0.2s;
-        }
-        .lang-btn img { width: 11px; height: 8px; border-radius: 1px; }
-        .lang-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+        .server-info h4 { margin: 0; font-size: 9px; font-weight: 700; color: #fff; }
+        .server-info p { margin: 0; font-size: 7px; color: #555; text-transform: uppercase; }
 
-        .label-mini { font-size: 7px; color: #444; font-weight: 900; text-transform: uppercase; margin: 6px 0 4px; letter-spacing: 0.5px; }
-
-        /* Lista de Servidores Slim V4 */
-        .server-container { 
-            display: none; flex-direction: column; gap: 4px; 
-            overflow-y: auto; flex-grow: 1; padding-bottom: 10px;
-            scrollbar-width: none;
+        /* CONTENEDOR DE VIDEO REFORZADO - FULL SCREEN REAL */
+        #video-container { 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            opacity: 0; visibility: hidden; z-index: 1000; background: #000;
+            display: flex; justify-content: center; align-items: center;
         }
-        .server-container.active { display: flex; }
-        .server-container::-webkit-scrollbar { display: none; }
-
-        .server-card { 
-            background: rgba(15, 15, 15, 0.9); border: 1px solid var(--border); 
-            padding: 6px 12px; border-radius: 5px; 
-            display: flex; justify-content: space-between; align-items: center;
-            cursor: pointer; min-height: 40px;
-        }
-        .server-card:active { transform: scale(0.98); background: var(--accent); color: #000; }
+        #video-container.active { opacity: 1; visibility: visible; }
         
-        .s-box { display: flex; align-items: center; gap: 8px; }
-        .s-play { color: var(--accent); font-size: 8px; }
-        .s-name { font-size: 11px; font-weight: 700; }
-        .s-desc { font-size: 7px; opacity: 0.5; text-transform: uppercase; display: block; margin-top: -2px; }
-        
-        .hd-tag { font-size: 7px; border: 1px solid rgba(255,255,255,0.15); padding: 1px 4px; border-radius: 2px; font-weight: 800; color: #fff; }
-
-        /* Video Layer */
-        #video-view { 
-            position: absolute; inset: 0; background: #000; z-index: 100; 
-            display: none; opacity: 0; transition: opacity 0.3s;
+        #main-ifr { 
+            width: 100%; height: 100%; border: none; 
+            position: absolute; top: 0; left: 0;
         }
-        #video-view.active { display: block; opacity: 1; }
-        iframe { width: 100%; height: 100%; border: none; }
 
-        #btn-close {
-            position: absolute; top: 10px; right: 10px; width: 28px; height: 28px;
-            background: rgba(0,0,0,0.6); border: 1px solid var(--border); border-radius: 50%;
-            color: #fff; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; z-index: 200; font-size: 11px;
+        /* Botón de Regreso Dinámico Mejorado */
+        #btn-back { 
+            position: fixed; top: 15px; right: 15px; 
+            background: rgba(0,0,0,0.7); color: #fff; 
+            border: 1px solid var(--neon-blue); 
+            padding: 8px 16px; border-radius: 20px; 
+            cursor: pointer; z-index: 2000; 
+            font-size: 10px; font-weight: 900; 
+            text-transform: uppercase; 
+            transition: all 0.3s ease;
+            opacity: 0; transform: translateY(-10px);
+            pointer-events: none;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+            backdrop-filter: blur(5px);
         }
+        #btn-back.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+        #box-link { display:none; margin-top:10px; border:1px solid #222; padding:10px; background: #050505; border-radius: 6px; }
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
-    <!-- GENERADOR V4 -->
-    <div id="admin">
-        <div class="admin-box">
-            <h2 style="margin:0 0 12px; color:var(--accent); font-size:14px; text-align:center">GENERADOR MULTIAUDIO V4</h2>
-            <div class="field"><label>Título</label><input type="text" id="t-in" placeholder="Nombre de la obra"></div>
-            <div class="field"><label>Imagen Fondo (URL)</label><input type="text" id="bg-in" placeholder="https://..."></div>
-            <div class="field">
-                <div style="display:flex; justify-content:space-between"><label>Audio Latino</label><button onclick="addInput('lat')" style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight:bold">+</button></div>
-                <div id="cont-lat"><input type="text" class="lat-val" placeholder="Enlace Servidor"></div>
+    <!-- GENERADOR -->
+    <div id="ui-generator">
+        <div class="card">
+            <h2 style="text-align:center; color:var(--neon-blue); margin-top:0; font-size: 16px;">GENERADOR MÚLTIPLE AUDIO V4</h2>
+            
+            <div style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
+                <div class="section-group">
+                    <div class="section-header"><span class="section-label">🇲🇽 Latino</span><button class="btn-add" onclick="addInput('lat')">+</button></div>
+                    <div id="cont-lat" class="input-list"><input type="text" class="lat-in" placeholder="Pegar Link"></div>
+                </div>
+                <div class="section-group">
+                    <div class="section-header"><span class="section-label">🇯🇵 Japonés</span><button class="btn-add" onclick="addInput('jap')">+</button></div>
+                    <div id="cont-jap" class="input-list"><input type="text" class="jap-in" placeholder="Pegar Link"></div>
+                </div>
+                <div class="section-group">
+                    <div class="section-header"><span class="section-label">🇪🇸 Castellano</span><button class="btn-add" onclick="addInput('cas')">+</button></div>
+                    <div id="cont-cas" class="input-list"><input type="text" class="cas-in" placeholder="Pegar Link"></div>
+                </div>
+                <div class="section-group">
+                    <div class="section-header"><span class="section-label">🇺🇸 Inglés</span><button class="btn-add" onclick="addInput('ing')">+</button></div>
+                    <div id="cont-ing" class="input-list"><input type="text" class="ing-in" placeholder="Pegar Link"></div>
+                </div>
+                <span class="section-label" style="display:block; margin: 8px 0 5px;">Fondo (URL)</span>
+                <input type="text" id="bg-in" placeholder="https://..." style="width: 100%;">
             </div>
-            <div class="field">
-                <div style="display:flex; justify-content:space-between"><label>Audio Japonés</label><button onclick="addInput('jap')" style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight:bold">+</button></div>
-                <div id="cont-jap"><input type="text" class="jap-val" placeholder="Enlace Servidor"></div>
-            </div>
-            <button class="btn-go" onclick="build()">GENERAR ENLACE FINAL</button>
-            <div id="out-box" style="display:none; margin-top:10px">
-                <input type="text" id="final-url" readonly style="font-size:9px">
-                <button class="btn-go" style="background:#fff" onclick="copyUrl()">COPIAR LINK</button>
+            
+            <button class="btn-main" onclick="buildLink()">GENERAR ENLACE REPRODUCTOR</button>
+            <div id="box-link">
+                <input type="text" id="out-url" readonly style="margin-bottom: 8px; font-size: 9px; color: var(--neon-blue); text-align: center;">
+                <button onclick="copyLink()" style="width:100%; background:var(--neon-blue); border:none; padding: 8px; font-weight:bold; border-radius: 4px; color: #000; font-size: 10px;">COPIAR LINK</button>
             </div>
         </div>
     </div>
 
-    <!-- PLAYER V4 -->
-    <div id="player">
-        <div id="btn-close" style="display:none" onclick="killVid()">✕</div>
-        
-        <div class="ui-content">
-            <header>
-                <h1 id="movie-title">Título</h1>
-                <div class="lang-flex">
-                    <div class="lang-btn" id="l-lat" onclick="tab('lat')"><img src="https://flagcdn.com/w40/mx.png"> <span>LATINO</span></div>
-                    <div class="lang-btn" id="l-jap" onclick="tab('jap')"><img src="https://flagcdn.com/w40/jp.png"> <span>JAPONÉS</span></div>
-                </div>
-            </header>
-            
-            <div class="label-mini">Servidores disponibles:</div>
-            
-            <div id="list-lat" class="server-container"></div>
-            <div id="list-jap" class="server-container"></div>
+    <!-- PLAYER -->
+    <div id="ui-player">
+        <div id="overlay-bg"></div>
+
+        <div id="content-wrapper">
+            <div class="tabs-audio">
+                <div class="tab-btn" id="btn-lat" onclick="switchAudio('lat')"><img src="https://flagcdn.com/w80/mx.png"><span>Latino</span></div>
+                <div class="tab-btn" id="btn-jap" onclick="switchAudio('jap')"><img src="https://flagcdn.com/w80/jp.png"><span>Japonés</span></div>
+                <div class="tab-btn" id="btn-cas" onclick="switchAudio('cas')"><img src="https://flagcdn.com/w80/es.png"><span>Español</span></div>
+                <div class="tab-btn" id="btn-ing" onclick="switchAudio('ing')"><img src="https://flagcdn.com/w80/us.png"><span>Inglés</span></div>
+            </div>
+            <div id="list-lat" class="server-list"></div>
+            <div id="list-jap" class="server-list"></div>
+            <div id="list-cas" class="server-list"></div>
+            <div id="list-ing" class="server-list"></div>
         </div>
 
-        <div id="video-view">
-            <iframe id="main-ifr" src="" allowfullscreen allow="autoplay"></iframe>
+        <!-- VIDEO CONTAINER FULL SCREEN -->
+        <div id="video-container" onclick="triggerControls()">
+            <button id="btn-back" onclick="closeVideo(event)">✕ CERRAR VIDEO</button>
+            <iframe id="main-ifr" src="" allowfullscreen allow="autoplay; fullscreen; picture-in-picture" scrolling="no"></iframe>
         </div>
     </div>
 
 <script>
-    function addInput(l) {
-        const d = document.createElement('div');
-        d.style.display = 'flex'; d.style.gap = '4px'; d.style.marginTop = '4px';
-        d.innerHTML = `<input type="text" class="${l}-val" placeholder="Enlace"><button onclick="this.parentElement.remove()" style="background:#333; border:none; color:#fff; border-radius:4px; padding:0 6px; font-size:10px">✕</button>`;
-        document.getElementById('cont-'+l).appendChild(d);
-    }
+    let hideTimeout;
 
-    const up = new URLSearchParams(window.location.search);
-    const uv = up.get('v');
-
-    if(uv) {
-        document.getElementById('admin').style.display='none';
-        document.getElementById('player').style.display='flex';
-        try {
-            const d = JSON.parse(decodeURIComponent(escape(atob(uv))));
-            document.getElementById('movie-title').innerText = d.t || "MOVIE";
-            if(d.bg) document.getElementById('player').style.backgroundImage = `url('${d.bg}')`;
+    // Función para mostrar controles al tocar la pantalla
+    function triggerControls() {
+        const btn = document.getElementById('btn-back');
+        const container = document.getElementById('video-container');
+        
+        if (container.classList.contains('active')) {
+            btn.classList.add('visible');
             
-            ['lat','jap'].forEach(l => {
-                const links = d[l].filter(u => u);
-                if(links.length > 0) {
-                    const box = document.getElementById('list-'+l);
-                    links.forEach((url, i) => {
-                        const card = document.createElement('div');
-                        card.className = 'server-card';
-                        card.onclick = () => {
-                            document.getElementById('main-ifr').src = url;
-                            document.getElementById('video-view').classList.add('active');
-                            document.getElementById('btn-close').style.display = 'flex';
-                        };
-                        card.innerHTML = `
-                            <div class="s-box">
-                                <span class="s-play">▶</span>
-                                <div>
-                                    <span class="s-name">Opción ${i+1}</span>
-                                    <span class="s-desc">${l=='lat'?'Latino':'Subtitulado'}</span>
-                                </div>
-                            </div>
-                            <span class="hd-tag">1080P</span>
-                        `;
-                        box.appendChild(card);
-                    });
-                } else { document.getElementById('l-'+l).style.display = 'none'; }
+            clearTimeout(hideTimeout);
+            hideTimeout = setTimeout(() => {
+                btn.classList.remove('visible');
+            }, 3500); 
+        }
+    }
+
+    function addInput(lang) {
+        const container = document.getElementById(`cont-${lang}`);
+        const div = document.createElement('div');
+        div.className = 'input-row';
+        div.innerHTML = `<input type="text" class="${lang}-in" placeholder="Link Servidor"><button class="btn-del" onclick="this.parentElement.remove()">×</button>`;
+        container.appendChild(div);
+    }
+
+    const q = new URLSearchParams(window.location.search);
+    const v = q.get('v');
+
+    if (v) {
+        document.getElementById('ui-generator').style.display = 'none';
+        document.getElementById('ui-player').style.display = 'flex';
+        try {
+            const data = JSON.parse(decodeURIComponent(escape(atob(v))));
+            if (data.bg) document.getElementById('ui-player').style.backgroundImage = `url('${data.bg}')`;
+            const order = ['lat', 'jap', 'cas', 'ing'];
+            const names = ['Latino', 'Japonés', 'Castellano', 'Inglés'];
+            let first = null;
+            order.forEach((l, i) => {
+                if (data[l]) {
+                    const links = data[l].filter(u => u && u.trim() !== "");
+                    if (links.length > 0) {
+                        const list = document.getElementById(`list-${l}`);
+                        links.forEach((url, idx) => {
+                            const item = document.createElement('div');
+                            item.className = 'server-item';
+                            item.onclick = () => {
+                                document.getElementById('main-ifr').src = url;
+                                document.getElementById('video-container').classList.add('active');
+                                triggerControls();
+                            };
+                            item.innerHTML = `<div class="play-icon">▶</div><div class="server-info"><h4>OPCIÓN ${idx+1}</h4><p>${names[i]}</p></div>`;
+                            list.appendChild(item);
+                        });
+                        document.getElementById(`btn-${l}`).style.display = 'block';
+                        if (!first) first = l;
+                    }
+                }
             });
-            tab(d.lat[0] ? 'lat' : 'jap');
-        } catch(e){}
+            if (first) switchAudio(first);
+        } catch(e) {}
     }
 
-    function tab(l) {
-        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.server-container').forEach(g => g.classList.remove('active'));
-        document.getElementById('l-'+l).classList.add('active');
-        document.getElementById('list-'+l).classList.add('active');
+    function switchAudio(lang) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.server-list').forEach(l => l.classList.remove('active'));
+        document.getElementById('btn-' + lang).classList.add('active');
+        document.getElementById('list-' + lang).classList.add('active');
     }
 
-    function build() {
-        const gV = c => Array.from(document.querySelectorAll(c)).map(i => i.value.trim());
-        const d = { t: document.getElementById('t-in').value, bg: document.getElementById('bg-in').value, lat: gV('.lat-val'), jap: gV('.jap-val') };
-        const e = btoa(unescape(encodeURIComponent(JSON.stringify(d))));
-        document.getElementById('final-url').value = window.location.origin + window.location.pathname + "?v=" + e;
-        document.getElementById('out-box').style.display = 'block';
+    function buildLink() {
+        const getVals = cls => Array.from(document.querySelectorAll(cls)).map(i => i.value.trim());
+        const data = { lat: getVals('.lat-in'), jap: getVals('.jap-in'), cas: getVals('.cas-in'), ing: getVals('.ing-in'), bg: document.getElementById('bg-in').value };
+        const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+        document.getElementById('out-url').value = window.location.origin + window.location.pathname + "?v=" + encoded;
+        document.getElementById('box-link').style.display = 'block';
     }
 
-    function copyUrl() { 
-        const r = document.getElementById('final-url'); 
-        r.select(); 
-        document.execCommand('copy'); 
+    function copyLink() {
+        const inp = document.getElementById('out-url');
+        inp.select();
+        document.execCommand("copy");
     }
-    
-    function killVid() { 
-        document.getElementById('video-view').classList.remove('active'); 
-        document.getElementById('main-ifr').src = ""; 
-        document.getElementById('btn-close').style.display = 'none';
+
+    function closeVideo(event) {
+        if(event) event.stopPropagation(); // Evita que el clic en cerrar active los controles de nuevo
+        document.getElementById('video-container').classList.remove('active');
+        const btn = document.getElementById('btn-back');
+        btn.classList.remove('visible');
+        document.getElementById('main-ifr').src = '';
+        clearTimeout(hideTimeout);
     }
 </script>
 </body>
