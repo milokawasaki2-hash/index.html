@@ -1,267 +1,280 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Player PRO</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Pro | Controles Nativos</title>
+    <style>
+        :root {
+            --neon-blue: #00d4ff;
+            --bg-dark: #000000;
+            --card-bg: rgba(10, 10, 12, 0.98);
+            --item-hover: rgba(0, 212, 255, 0.15);
+        }
 
-<style>
-body{
-  margin:0;
-  font-family:sans-serif;
-  background:#000;
-  color:#fff;
-}
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background-color: var(--bg-dark);
+            color: #fff; font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
 
-/* PANEL */
-#panel{
-  padding:20px;
-  max-width:900px;
-  margin:auto;
-}
+        #ui-generator {
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; background: #050505; overflow-y: auto; padding: 20px; box-sizing: border-box;
+        }
+        .card { 
+            background: #000; padding: 20px; border-radius: 12px; border: 1px solid #1a1a1a; 
+            width: 100%; max-width: 450px; box-shadow: 0 0 50px rgba(0,0,0,0.9);
+        }
+        .section-group { margin-bottom: 12px; background: #080808; padding: 10px; border-radius: 8px; border: 1px solid #111; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .section-label { color: var(--neon-blue); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; }
 
-input, select{
-  width:100%;
-  padding:10px;
-  margin:5px 0;
-  background:#111;
-  border:none;
-  color:#fff;
-  border-radius:6px;
-}
+        .btn-add { background: var(--neon-blue); border: none; color: #000; border-radius: 4px; padding: 2px 8px; font-size: 14px; font-weight: bold; cursor: pointer; }
+        .input-list { display: flex; flex-direction: column; gap: 5px; }
+        .input-row { display: flex; gap: 5px; }
+        .btn-del { background: #ff3333; border: none; color: white; border-radius: 4px; padding: 0 8px; cursor: pointer; font-size: 12px; }
 
-button{
-  padding:10px;
-  margin:5px 0;
-  background:#ff3d00;
-  border:none;
-  color:#fff;
-  border-radius:6px;
-  cursor:pointer;
-}
+        input, select { 
+            flex: 1; padding: 8px 12px; background: #000; border: 1px solid #222; 
+            border-radius: 5px; color: #fff; font-size: 11px; outline: none; 
+        }
+        input:focus, select:focus { border-color: var(--neon-blue); }
 
-/* PLAYER */
-#player{display:none;}
+        .btn-main { 
+            width: 100%; padding: 14px; background: var(--neon-blue); border: none; 
+            font-weight: 800; border-radius: 6px; cursor: pointer; margin-top: 10px; 
+            text-transform: uppercase; font-size: 11px; color: #000; letter-spacing: 1px;
+        }
 
-.header{
-  height:200px;
-  background-size:cover;
-  display:flex;
-  align-items:end;
-  padding:20px;
-  background-position:center;
-}
+        #ui-player {
+            display: none; width: 100%; height: 100vh;
+            justify-content: center; align-items: center;
+            position: relative; background-size: cover; background-position: center;
+        }
+        #overlay-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.95) 100%); z-index: 1; }
 
-.langs{
-  display:flex;
-  overflow:auto;
-  padding:10px;
-}
+        #content-wrapper { z-index: 10; width: 90%; max-width: 360px; text-align: center; }
 
-.langs button{
-  background:#111;
-  margin-right:10px;
-  border-radius:20px;
-  padding:8px 15px;
-}
+        .tabs-audio { display: flex; gap: 6px; margin-bottom: 12px; justify-content: center; flex-wrap: wrap; }
+        .tab-btn { cursor: pointer; text-align: center; opacity: 0.3; transition: 0.3s; min-width: 40px; display: none; }
+        .tab-btn.active { opacity: 1; transform: scale(1.1); }
+        .tab-btn img { width: 24px; height: 16px; border-radius: 2px; display: block; margin: 0 auto 3px; }
+        .tab-btn span { font-size: 7px; font-weight: 800; text-transform: uppercase; color: #fff; }
 
-.server{
-  display:flex;
-  align-items:center;
-  background:rgba(255,255,255,0.05);
-  margin:10px;
-  padding:15px;
-  border-radius:10px;
-  cursor:pointer;
-  transition:0.3s;
-}
+        .server-list { display: none; flex-direction: column; gap: 4px; max-height: 55vh; overflow-y: auto; padding: 2px; scrollbar-width: none; }
+        .server-list.active { display: flex; }
 
-.server:hover{
-  background:rgba(255,255,255,0.15);
-  transform:scale(1.02);
-}
+        .server-item {
+            background: var(--card-bg);
+            border-radius: 4px; padding: 7px 12px;
+            display: flex; align-items: center;
+            gap: 10px; cursor: pointer;
+            transition: 0.2s; border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .server-item:hover { background: var(--item-hover); border-color: var(--neon-blue); }
+        .play-icon { color: var(--neon-blue); font-size: 9px; opacity: 0.8; }
 
-.server img{
-  width:40px;
-  margin-right:15px;
-}
+        .server-info h4 { margin: 0; font-size: 9px; font-weight: 700; color: #fff; }
+        .server-info p { margin: 0; font-size: 7px; color: #555; text-transform: uppercase; }
 
-.server-info{
-  display:flex;
-  flex-direction:column;
-}
+        #video-container { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            opacity: 0; visibility: hidden; z-index: 100; background: #000; 
+        }
+        #video-container.active { opacity: 1; visibility: visible; }
 
-.video-box{
-  display:none;
-  position:relative;
-}
+        iframe { width: 100%; height: 100%; border: none; }
 
-iframe{
-  width:100%;
-  height:400px;
-  border:none;
-}
+        #btn-back { 
+            position: absolute; top: 20px; right: 20px; 
+            background: rgba(0,0,0,0.8); color: #fff; 
+            border: 1px solid var(--neon-blue); 
+            padding: 6px 14px; border-radius: 4px; 
+            cursor: pointer; z-index: 200; 
+            font-size: 9px; font-weight: 900; 
+            text-transform: uppercase; 
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            opacity: 0;
+            display: none;
+        }
+        #btn-back.visible { opacity: 1; transform: translateY(0); }
 
-.back{
-  position:absolute;
-  top:10px;
-  left:10px;
-  background:#000;
-  padding:8px 12px;
-  border-radius:5px;
-  cursor:pointer;
-}
-</style>
+        #box-link { display:none; margin-top:10px; border:1px solid #222; padding:10px; background: #050505; border-radius: 6px; }
+        ::-webkit-scrollbar { display: none; }
+    </style>
 </head>
-
 <body>
 
-<!-- PANEL -->
-<div id="panel">
-  <h2>🎬 Generador PRO</h2>
+<div id="ui-generator">
+    <div class="card">
+        <h2 style="text-align:center; color:var(--neon-blue); margin-top:0; font-size: 16px;">SISTEMA MULTI-AUDIO PRO</h2>
 
-  <input id="title" placeholder="Título">
-  <input id="poster" placeholder="Imagen fondo">
+        <div style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
 
-  <div id="servers"></div>
+            <div class="section-group">
+                <div class="section-header"><span class="section-label">🇲🇽 Latino</span><button class="btn-add" onclick="addInput('lat')">+</button></div>
+                <div id="cont-lat" class="input-list"></div>
+            </div>
 
-  <button onclick="addServer()">+ Agregar Servidor</button>
-  <button onclick="generate()">Generar Link</button>
+            <div class="section-group">
+                <div class="section-header"><span class="section-label">🇯🇵 Japonés</span><button class="btn-add" onclick="addInput('jap')">+</button></div>
+                <div id="cont-jap" class="input-list"></div>
+            </div>
 
-  <div id="result"></div>
+            <div class="section-group">
+                <div class="section-header"><span class="section-label">🇪🇸 Castellano</span><button class="btn-add" onclick="addInput('cas')">+</button></div>
+                <div id="cont-cas" class="input-list"></div>
+            </div>
+
+            <div class="section-group">
+                <div class="section-header"><span class="section-label">🇺🇸 Inglés</span><button class="btn-add" onclick="addInput('ing')">+</button></div>
+                <div id="cont-ing" class="input-list"></div>
+            </div>
+
+            <span class="section-label" style="display:block; margin: 8px 0 5px;">Fondo (URL)</span>
+            <input type="text" id="bg-in" placeholder="https://..." style="width: 100%;">
+        </div>
+
+        <button class="btn-main" onclick="buildLink()">GENERAR ENLACE REPRODUCTOR</button>
+        <div id="box-link">
+            <input type="text" id="out-url" readonly style="margin-bottom: 8px; font-size: 9px; color: var(--neon-blue); text-align: center;">
+            <button onclick="copyLink()" style="width:100%; background:var(--neon-blue); border:none; padding: 8px; font-weight:bold; border-radius: 4px; color: #000; font-size: 10px;">COPIAR LINK</button>
+        </div>
+    </div>
 </div>
 
-<!-- PLAYER -->
-<div id="player">
-  <div class="header" id="bg">
-    <h1 id="ptitle"></h1>
-  </div>
+<div id="ui-player" onmousemove="triggerControls()" ontouchstart="triggerControls()">
+    <div id="overlay-bg"></div>
+    <button id="btn-back" onclick="closeVideo()">Regresar al Menú</button>
 
-  <div class="langs" id="langs"></div>
+    <div id="content-wrapper">
+        <div class="tabs-audio">
+            <div class="tab-btn" id="btn-lat" onclick="switchAudio('lat')"><img src="https://flagcdn.com/w80/mx.png"><span>Latino</span></div>
+            <div class="tab-btn" id="btn-jap" onclick="switchAudio('jap')"><img src="https://flagcdn.com/w80/jp.png"><span>Japonés</span></div>
+            <div class="tab-btn" id="btn-cas" onclick="switchAudio('cas')"><img src="https://flagcdn.com/w80/es.png"><span>Español</span></div>
+            <div class="tab-btn" id="btn-ing" onclick="switchAudio('ing')"><img src="https://flagcdn.com/w80/us.png"><span>Inglés</span></div>
+        </div>
+        <div id="list-lat" class="server-list"></div>
+        <div id="list-jap" class="server-list"></div>
+        <div id="list-cas" class="server-list"></div>
+        <div id="list-ing" class="server-list"></div>
+    </div>
 
-  <div id="list"></div>
-
-  <div class="video-box" id="videoBox">
-    <div class="back" onclick="back()">⬅ Volver</div>
-    <iframe id="frame"></iframe>
-  </div>
+    <div id="video-container" onmousemove="triggerControls()" ontouchstart="triggerControls()">
+        <iframe id="main-ifr" src="" allowfullscreen allow="autoplay; fullscreen; picture-in-picture"></iframe>
+    </div>
 </div>
 
 <script>
-// ICONOS SERVIDORES
-const icons={
-  streamwish:"https://i.imgur.com/8qR8Z8T.png",
-  filemoon:"https://i.imgur.com/kL9Z9ZP.png",
-  voesx:"https://i.imgur.com/Tk3Qb8O.png",
-  doodstream:"https://i.imgur.com/9Z6Z9Z9.png",
-  streamtape:"https://i.imgur.com/jZ7Z7Z7.png",
-  netu:"https://i.imgur.com/YZ8Z8Z8.png",
-  vidhide:"https://i.imgur.com/QZ9Z9Z9.png",
-  plustream:"https://i.imgur.com/PZ5Z5Z5.png"
-};
-
-function addServer(){
-  let div=document.createElement("div");
-  div.innerHTML=`
-    <input placeholder="Servidor (streamwish...)">
-    <select>
-      <option>Latino</option>
-      <option>Español</option>
-      <option>Inglés</option>
-      <option>Japonés</option>
-      <option>Otros</option>
-    </select>
-    <input placeholder="Calidad (FULL_HD)">
-    <input placeholder="URL embed">
-  `;
-  document.getElementById("servers").appendChild(div);
-}
-
-function generate(){
-  let data={
-    title:title.value,
-    poster:poster.value,
-    list:[]
-  };
-
-  document.querySelectorAll("#servers div").forEach(d=>{
-    let i=d.querySelectorAll("input,select");
-    data.list.push({
-      server:i[0].value.toLowerCase(),
-      lang:i[1].value,
-      quality:i[2].value,
-      url:i[3].value
-    });
-  });
-
-  let link=location.origin+location.pathname+"?data="+btoa(JSON.stringify(data));
-  result.innerText=link;
-}
-
-/* PLAYER */
-function load(){
-  let p=new URLSearchParams(location.search).get("data");
-  if(!p) return;
-
-  panel.style.display="none";
-  player.style.display="block";
-
-  let data=JSON.parse(atob(p));
-
-  ptitle.innerText=data.title;
-  bg.style.backgroundImage=`url(${data.poster})`;
-
-  let langs=[...new Set(data.list.map(x=>x.lang))];
-
-  langs.forEach(l=>{
-    let b=document.createElement("button");
-    b.innerText=l;
-    b.onclick=()=>show(l,data.list);
-    langsDiv.appendChild(b);
-  });
-
-  show(langs[0],data.list);
-}
-
-function show(lang,list){
-  listDiv.innerHTML="";
-  videoBox.style.display="none";
-
-  list.filter(x=>x.lang==lang).forEach(item=>{
-    let d=document.createElement("div");
-    d.className="server";
-
-    let icon=icons[item.server]||"";
-
-    d.innerHTML=`
-      <img src="${icon}">
-      <div class="server-info">
-        <b>${item.server.toUpperCase()}</b>
-        <span>Audio: ${item.lang} - Calidad: ${item.quality}</span>
-      </div>
+function addInput(lang) {
+    const container = document.getElementById(`cont-${lang}`);
+    const div = document.createElement('div');
+    div.className = 'input-row';
+    div.innerHTML = `
+        <select class="${lang}-server">
+            <option>streamwish</option><option>filemoon</option><option>voesx</option>
+            <option>doodstream</option><option>streamtape</option><option>netu</option>
+            <option>vidhide</option><option>plustream</option><option>streamhg</option>
+            <option>rpmshare</option><option>easyvidplay</option><option>mp4upload</option>
+            <option>uqload</option><option>savefiles</option>
+        </select>
+        <select class="${lang}-quality">
+            <option>FULL_HD</option><option>HD</option><option>SD</option><option>CAM</option>
+        </select>
+        <input type="text" class="${lang}-url" placeholder="Link Servidor">
+        <button class="btn-del" onclick="this.parentElement.remove()">×</button>
     `;
+    container.appendChild(div);
+}
 
-    d.onclick=()=>{
-      frame.src=item.url;
-      videoBox.style.display="block";
-      listDiv.style.display="none";
+function getData(lang){
+    return Array.from(document.querySelectorAll(`#cont-${lang} .input-row`)).map(row=>{
+        return {
+            server: row.querySelector(`.${lang}-server`).value,
+            quality: row.querySelector(`.${lang}-quality`).value,
+            url: row.querySelector(`.${lang}-url`).value
+        }
+    });
+}
+
+const q = new URLSearchParams(window.location.search);
+const v = q.get('v');
+
+if (v) {
+    document.getElementById('ui-generator').style.display = 'none';
+    document.getElementById('ui-player').style.display = 'flex';
+    try {
+        const data = JSON.parse(decodeURIComponent(escape(atob(v))));
+        if (data.bg) document.getElementById('ui-player').style.backgroundImage = `url('${data.bg}')`;
+        const order = ['lat', 'jap', 'cas', 'ing'];
+        const names = ['Latino', 'Japonés', 'Castellano', 'Inglés'];
+        let first = null;
+        order.forEach((l, i) => {
+            if (data[l]) {
+                const list = document.getElementById(`list-${l}`);
+                data[l].forEach((item) => {
+                    if(!item.url) return;
+                    const div = document.createElement('div');
+                    div.className = 'server-item';
+                    div.onclick = () => {
+                        document.getElementById('main-ifr').src = item.url;
+                        document.getElementById('video-container').classList.add('active');
+                        triggerControls();
+                    };
+                    div.innerHTML = `
+                        <div class="play-icon">▶</div>
+                        <div class="server-info">
+                            <h4>${item.server.toUpperCase()}</h4>
+                            <p>Audio: ${names[i]} - Calidad: ${item.quality}</p>
+                        </div>`;
+                    list.appendChild(div);
+                });
+                if (list.children.length > 0) {
+                    document.getElementById(`btn-${l}`).style.display = 'block';
+                    if (!first) first = l;
+                }
+            }
+        });
+        if (first) switchAudio(first);
+    } catch(e) {}
+}
+
+function switchAudio(lang) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.server-list').forEach(l => l.classList.remove('active'));
+    document.getElementById('btn-' + lang).classList.add('active');
+    document.getElementById('list-' + lang).classList.add('active');
+}
+
+function buildLink() {
+    const data = {
+        lat: getData('lat'),
+        jap: getData('jap'),
+        cas: getData('cas'),
+        ing: getData('ing'),
+        bg: document.getElementById('bg-in').value
     };
-
-    listDiv.appendChild(d);
-  });
-
-  listDiv.style.display="block";
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+    document.getElementById('out-url').value = window.location.origin + window.location.pathname + "?v=" + encoded;
+    document.getElementById('box-link').style.display = 'block';
 }
 
-function back(){
-  videoBox.style.display="none";
-  listDiv.style.display="block";
+function copyLink() {
+    const inp = document.getElementById('out-url');
+    inp.select();
+    document.execCommand("copy");
 }
 
-let langsDiv=document.getElementById("langs");
-let listDiv=document.getElementById("list");
-
-load();
+function closeVideo() {
+    document.getElementById('video-container').classList.remove('active');
+    const btn = document.getElementById('btn-back');
+    btn.classList.remove('visible');
+    btn.style.display = 'none';
+    document.getElementById('main-ifr').src = '';
+}
 </script>
 
 </body>
