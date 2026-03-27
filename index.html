@@ -3,305 +3,355 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sool Player System</title>
+    <title>Sool Player - System</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Librería para compresión y así permitir enlaces más largos -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        .glass {
-            background: rgba(255, 255, 255, 0.05);
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        :root {
+            --primary: #e50914;
+            --bg-dark: #0f0f0f;
+            --bg-card: #1a1a1a;
+            --text-main: #ffffff;
+            --text-dim: #b3b3b3;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .glass-card {
+            background: rgba(26, 26, 26, 0.95);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .aspect-video-custom {
-            aspect-ratio: 16 / 9;
+
+        .btn-netflix {
+            background-color: var(--primary);
+            transition: all 0.3s ease;
         }
-        body {
-            background-color: #0f172a;
-            color: #f8fafc;
+
+        .btn-netflix:hover {
+            background-color: #ff0a16;
+            transform: scale(1.02);
         }
+
+        .server-item {
+            background: #252525;
+            transition: transform 0.2s;
+        }
+
+        .server-item:hover {
+            background: #333;
+            transform: translateY(-2px);
+        }
+
+        /* Reproductor Estilo Netflix */
+        .player-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            filter: brightness(0.2) blur(20px);
+            background-size: cover;
+            background-position: center;
+        }
+
+        iframe {
+            border: none;
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        .hidden-view { display: none; }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8">
+<body>
 
-    <div id="app" class="max-w-5xl mx-auto">
-        <!-- Navegación simple -->
-        <nav class="flex gap-4 mb-8 justify-center">
-            <button onclick="switchView('generator')" id="btn-gen" class="px-6 py-2 rounded-full bg-blue-600 font-bold hover:bg-blue-700 transition">Generador</button>
-            <button onclick="switchView('player')" id="btn-play" class="px-6 py-2 rounded-full glass font-bold hover:bg-slate-700 transition">Vista Reproductor</button>
-        </nav>
+    <!-- ==========================================
+         PANEL GENERADOR (VISTA 1)
+         ========================================== -->
+    <div id="generator-view" class="container mx-auto px-4 py-10 max-w-4xl">
+        <header class="mb-10 text-center">
+            <h1 class="text-4xl font-bold text-red-600 mb-2 tracking-tighter">SOOL PLAYER <span class="text-white text-lg font-light">| Generador</span></h1>
+            <p class="text-gray-400">Crea enlaces de reproducción dinámicos al instante</p>
+        </header>
 
-        <!-- SECCIÓN GENERADOR -->
-        <section id="view-generator" class="space-y-6">
-            <div class="glass p-6 rounded-2xl">
-                <h1 class="text-2xl font-bold mb-4 flex items-center gap-2">
-                    <span>⚙️</span> Configuración de Video
-                </h1>
-                
-                <div id="entries-container" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                    <!-- Las entradas se generarán aquí -->
+        <div class="glass-card rounded-xl p-8 shadow-2xl">
+            <!-- Info General -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div>
+                    <label class="block text-sm font-semibold mb-2 text-gray-300">Título del Video</label>
+                    <input type="text" id="input-title" placeholder="Ej: Avengers: Endgame" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 outline-none focus:border-red-500 transition">
                 </div>
-
-                <div class="mt-6 flex flex-col md:flex-row gap-4 items-center">
-                    <button onclick="addEntry()" class="w-full md:w-auto px-6 py-3 bg-emerald-600 rounded-xl font-bold hover:bg-emerald-700 transition">
-                        + Añadir Servidor (Max 25)
-                    </button>
-                    <button onclick="generateLink()" class="w-full md:w-auto px-6 py-3 bg-indigo-600 rounded-xl font-bold hover:bg-indigo-700 transition">
-                        🔗 Generar Enlace
-                    </button>
+                <div>
+                    <label class="block text-sm font-semibold mb-2 text-gray-300">URL Imagen / Poster</label>
+                    <input type="text" id="input-poster" placeholder="https://imagen.com/poster.jpg" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 outline-none focus:border-red-500 transition">
                 </div>
             </div>
 
-            <!-- Resultado del enlace -->
-            <div id="result-box" class="hidden glass p-6 rounded-2xl border-indigo-500/50">
-                <h2 class="text-lg font-bold mb-2 text-indigo-300">Enlace Generado:</h2>
+            <hr class="border-zinc-800 mb-8">
+
+            <!-- Lista de Servidores -->
+            <div class="mb-4 flex justify-between items-center">
+                <h3 class="text-xl font-semibold">Servidores (Máx 25)</h3>
+                <button onclick="addServerRow()" class="text-sm bg-zinc-700 hover:bg-zinc-600 px-4 py-2 rounded-lg transition">
+                    <i class="fas fa-plus mr-2"></i>Añadir Servidor
+                </button>
+            </div>
+
+            <div id="servers-container" class="space-y-4 mb-10">
+                <!-- Las filas de servidores se insertan aquí -->
+            </div>
+
+            <button onclick="generateLink()" class="w-full btn-netflix py-4 rounded-xl font-bold text-lg shadow-lg">
+                GENERAR ENLACE DINÁMICO
+            </button>
+
+            <!-- Resultado -->
+            <div id="result-container" class="mt-8 hidden">
+                <label class="block text-sm font-semibold mb-2 text-green-400">¡Enlace Generado!</label>
                 <div class="flex gap-2">
-                    <input id="generated-url" readonly type="text" class="w-full bg-black/40 p-3 rounded-lg border border-white/10 text-sm font-mono focus:outline-none">
-                    <button onclick="copyUrl()" class="px-4 py-2 bg-slate-700 rounded-lg hover:bg-slate-600">Copiar</button>
-                </div>
-                <p class="text-xs text-slate-400 mt-2">* Este enlace contiene toda la configuración comprimida en Base64.</p>
-            </div>
-        </section>
-
-        <!-- SECCIÓN REPRODUCTOR (Interpretador) -->
-        <section id="view-player" class="hidden space-y-6">
-            <div id="player-container" class="glass rounded-3xl overflow-hidden shadow-2xl">
-                <!-- Estado Inicial: Sin Datos -->
-                <div id="player-empty" class="p-20 text-center">
-                    <div class="text-6xl mb-4">🎬</div>
-                    <h2 class="text-2xl font-bold">Esperando datos...</h2>
-                    <p class="text-slate-400">Carga un enlace con el parámetro ?data= para ver el contenido.</p>
-                </div>
-
-                <!-- Interface Real del Reproductor -->
-                <div id="player-active" class="hidden">
-                    <!-- Cabecera -->
-                    <div class="p-4 bg-black/40 flex justify-between items-center border-b border-white/5">
-                        <button onclick="showSelector()" class="flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                            </svg>
-                            Volver a la lista
-                        </button>
-                        <div id="player-current-info" class="text-xs font-bold px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full border border-indigo-500/30">
-                            VOESX - 1080p
-                        </div>
-                    </div>
-
-                    <!-- Iframe -->
-                    <div class="aspect-video-custom bg-black relative">
-                        <iframe id="main-iframe" class="absolute inset-0 w-full h-full" src="" frameborder="0" allowfullscreen></iframe>
-                    </div>
-
-                    <!-- Selector de Idiomas y Servidores (Modal/Overlay) -->
-                    <div id="player-selector" class="p-6 bg-slate-900/95">
-                        <h3 class="text-xl font-bold mb-6 text-center">Selecciona una opción de reproducción</h3>
-                        
-                        <div id="language-groups" class="space-y-8">
-                            <!-- Grupos por idioma se inyectan aquí -->
-                        </div>
-                    </div>
+                    <input type="text" id="output-link" readonly class="w-full bg-black border border-zinc-800 rounded-lg p-3 text-xs font-mono text-gray-400">
+                    <button onclick="copyLink()" class="bg-zinc-700 px-4 rounded-lg hover:bg-zinc-600">Copiar</button>
+                    <button onclick="testLink()" class="bg-blue-600 px-4 rounded-lg hover:bg-blue-500">Probar</button>
                 </div>
             </div>
-        </section>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         REPRODUCTOR DINÁMICO (VISTA 2)
+         ========================================== -->
+    <div id="player-view" class="hidden-view min-h-screen flex flex-col items-center justify-center p-4">
+        <div id="player-bg" class="player-bg"></div>
+        
+        <!-- Header Info -->
+        <div class="z-10 w-full max-w-5xl mb-6 flex flex-col md:flex-row items-end justify-between gap-4">
+            <div class="flex items-center gap-6">
+                <img id="display-poster" src="" alt="Poster" class="w-24 h-36 object-cover rounded-lg shadow-2xl border border-white/10 hidden md:block">
+                <div>
+                    <h2 id="display-title" class="text-3xl md:text-5xl font-bold text-white drop-shadow-lg">Cargando...</h2>
+                    <p class="text-gray-300 mt-2 font-light">Selecciona un servidor para comenzar la reproducción</p>
+                </div>
+            </div>
+            <div id="language-tabs" class="flex gap-2 bg-black/40 p-2 rounded-full backdrop-blur-md">
+                <!-- Pestañas de idiomas dinámicas -->
+            </div>
+        </div>
+
+        <!-- Main Player Container -->
+        <div id="content-container" class="z-10 w-full max-w-5xl aspect-video glass-card rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] relative">
+            
+            <!-- Selector de Servidores (Grilla) -->
+            <div id="server-selector" class="absolute inset-0 z-20 bg-zinc-900/95 flex flex-col p-8 overflow-y-auto">
+                <div id="servers-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    <!-- Servidores dinámicos aquí -->
+                </div>
+            </div>
+
+            <!-- Iframe de Video -->
+            <div id="video-wrapper" class="hidden w-full h-full relative">
+                <button onclick="closePlayer()" class="absolute top-4 left-4 z-30 bg-black/60 hover:bg-red-600 p-3 rounded-full transition group">
+                    <i class="fas fa-arrow-left text-white"></i>
+                    <span class="ml-2 hidden group-hover:inline text-sm font-bold">Volver</span>
+                </button>
+                <iframe id="video-iframe" allowfullscreen></iframe>
+            </div>
+        </div>
     </div>
 
     <script>
+        // --- CONFIGURACIÓN Y ESTADO ---
+        let serverCount = 0;
+        const languages = {
+            "LAT": { label: "Latino", icon: "🇲🇽" },
+            "ESP": { label: "Castellano", icon: "🇪🇸" },
+            "SUB": { label: "Subtitulado", icon: "🇺🇸" },
+            "JAP": { label: "Japonés", icon: "🇯🇵" },
+            "OTRO": { label: "Otros", icon: "🌐" }
+        };
+
         // --- LÓGICA DEL GENERADOR ---
-        let entries = [
-            { server: 'Streamwish', lang: 'Latino', quality: '1080p', url: '' }
-        ];
 
-        function addEntry() {
-            if (entries.length >= 25) return;
-            entries.push({ server: 'Streamwish', lang: 'Latino', quality: '1080p', url: '' });
-            renderEntries();
-        }
+        function addServerRow() {
+            if (serverCount >= 25) return;
+            serverCount++;
 
-        function removeEntry(index) {
-            entries.splice(index, 1);
-            renderEntries();
-        }
-
-        function updateEntry(index, field, value) {
-            entries[index][field] = value;
-        }
-
-        function renderEntries() {
-            const container = document.getElementById('entries-container');
-            container.innerHTML = entries.map((e, i) => `
-                <div class="flex flex-wrap gap-2 p-4 bg-white/5 rounded-xl border border-white/10 items-end">
-                    <div class="flex-1 min-w-[120px]">
-                        <label class="block text-xs text-slate-400 mb-1">Servidor</label>
-                        <select onchange="updateEntry(${i}, 'server', this.value)" class="w-full bg-slate-800 p-2 rounded border border-white/10 text-sm">
-                            <option ${e.server === 'Streamwish' ? 'selected' : ''}>Streamwish</option>
-                            <option ${e.server === 'Filemoon' ? 'selected' : ''}>Filemoon</option>
-                            <option ${e.server === 'Voesx' ? 'selected' : ''}>Voesx</option>
-                            <option ${e.server === 'Doodstream' ? 'selected' : ''}>Doodstream</option>
-                            <option ${e.server === 'Streamtape' ? 'selected' : ''}>Streamtape</option>
-                            <option ${e.server === 'Netu' ? 'selected' : ''}>Netu</option>
-                            <option ${e.server === 'Vidhide' ? 'selected' : ''}>Vidhide</option>
-                            <option ${e.server === 'Plustream' ? 'selected' : ''}>Plustream</option>
-                        </select>
-                    </div>
-                    <div class="flex-1 min-w-[120px]">
-                        <label class="block text-xs text-slate-400 mb-1">Idioma</label>
-                        <select onchange="updateEntry(${i}, 'lang', this.value)" class="w-full bg-slate-800 p-2 rounded border border-white/10 text-sm">
-                            <option ${e.lang === 'Latino' ? 'selected' : ''}>Latino</option>
-                            <option ${e.lang === 'Español' ? 'selected' : ''}>Español</option>
-                            <option ${e.lang === 'Inglés' ? 'selected' : ''}>Inglés</option>
-                            <option ${e.lang === 'Japonés' ? 'selected' : ''}>Japonés</option>
-                            <option ${e.lang === 'Otros' ? 'selected' : ''}>Otros</option>
-                        </select>
-                    </div>
-                    <div class="flex-1 min-w-[80px]">
-                        <label class="block text-xs text-slate-400 mb-1">Calidad</label>
-                        <input type="text" value="${e.quality}" oninput="updateEntry(${i}, 'quality', this.value)" class="w-full bg-slate-800 p-2 rounded border border-white/10 text-sm">
-                    </div>
-                    <div class="flex-[2] min-w-[200px]">
-                        <label class="block text-xs text-slate-400 mb-1">URL Embed</label>
-                        <input type="text" value="${e.url}" placeholder="https://..." oninput="updateEntry(${i}, 'url', this.value)" class="w-full bg-slate-800 p-2 rounded border border-white/10 text-sm">
-                    </div>
-                    <button onclick="removeEntry(${i})" class="p-2 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 transition">🗑️</button>
-                </div>
-            `).join('');
+            const container = document.getElementById('servers-container');
+            const row = document.createElement('div');
+            row.className = "server-row grid grid-cols-1 md:grid-cols-4 gap-3 bg-zinc-900/50 p-4 rounded-lg border border-zinc-800 relative group";
+            row.innerHTML = `
+                <input type="text" placeholder="Nombre Servidor (Ej: Streamwish)" class="srv-name bg-zinc-800 border border-zinc-700 rounded p-2 text-sm">
+                <select class="srv-lang bg-zinc-800 border border-zinc-700 rounded p-2 text-sm">
+                    <option value="LAT">Español Latino</option>
+                    <option value="ESP">Español (España)</option>
+                    <option value="SUB">Inglés / Sub</option>
+                    <option value="JAP">Japonés</option>
+                    <option value="OTRO">Otros</option>
+                </select>
+                <select class="srv-quality bg-zinc-800 border border-zinc-700 rounded p-2 text-sm">
+                    <option value="FULL_HD">Full HD (1080p)</option>
+                    <option value="HD">HD (720p)</option>
+                    <option value="SD">SD (480p)</option>
+                </select>
+                <input type="text" placeholder="Embed URL (iframe)" class="srv-url bg-zinc-800 border border-zinc-700 rounded p-2 text-sm">
+                <button onclick="this.parentElement.remove(); serverCount--;" class="absolute -right-2 -top-2 bg-red-600 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition">✕</button>
+            `;
+            container.appendChild(row);
         }
 
         function generateLink() {
-            try {
-                // Filtramos entradas vacías
-                const data = entries.filter(e => e.url.trim() !== "");
-                if (data.length === 0) {
-                    alert("Agrega al menos una URL de video.");
-                    return;
-                }
+            const title = document.getElementById('input-title').value;
+            const poster = document.getElementById('input-poster').value;
+            const serverRows = document.querySelectorAll('.server-row');
+            
+            const servers = [];
+            serverRows.forEach(row => {
+                servers.push({
+                    n: row.querySelector('.srv-name').value,
+                    l: row.querySelector('.srv-lang').value,
+                    q: row.querySelector('.srv-quality').value,
+                    u: row.querySelector('.srv-url').value
+                });
+            });
 
-                // Codificación: JSON -> GZIP -> Base64 Safe
-                const jsonStr = JSON.stringify(data);
-                const compressed = pako.deflate(jsonStr);
-                const base64 = btoa(String.fromCharCode.apply(null, compressed))
-                                .replace(/\+/g, '-')
-                                .replace(/\//g, '_')
-                                .replace(/=+$/, '');
-
-                const baseUrl = window.location.origin + window.location.pathname;
-                const fullUrl = `${baseUrl}?data=${base64}`;
-
-                document.getElementById('generated-url').value = fullUrl;
-                document.getElementById('result-box').classList.remove('hidden');
-                
-                // Animación de scroll
-                document.getElementById('result-box').scrollIntoView({ behavior: 'smooth' });
-            } catch (err) {
-                console.error(err);
-                alert("Error al generar el enlace.");
+            if (!title || servers.length === 0) {
+                alert("Por favor completa el título y añade al menos un servidor.");
+                return;
             }
+
+            const data = { t: title, p: poster, s: servers };
+            const jsonStr = JSON.stringify(data);
+            const base64 = btoa(unescape(encodeURIComponent(jsonStr)));
+            
+            const currentUrl = window.location.origin + window.location.pathname;
+            const finalLink = `${currentUrl}?data=${base64}`;
+
+            document.getElementById('output-link').value = finalLink;
+            document.getElementById('result-container').classList.remove('hidden');
         }
 
-        function copyUrl() {
-            const el = document.getElementById('generated-url');
-            el.select();
-            document.execCommand('copy');
+        function copyLink() {
+            const copyText = document.getElementById("output-link");
+            copyText.select();
+            document.execCommand("copy");
             alert("¡Enlace copiado al portapapeles!");
         }
 
+        function testLink() {
+            const link = document.getElementById('output-link').value;
+            window.location.href = link;
+        }
+
         // --- LÓGICA DEL REPRODUCTOR ---
-        let currentData = [];
 
-        function initPlayerFromUrl() {
-            const params = new URLSearchParams(window.location.search);
-            const rawData = params.get('data');
+        let movieData = null;
 
-            if (!rawData) return;
+        function initPlayer() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const data64 = urlParams.get('data');
+
+            if (!data64) {
+                // Si no hay datos, mostrar 2 servidores de ejemplo por defecto en el panel
+                addServerRow();
+                addServerRow();
+                return;
+            }
+
+            // Cambiar vista
+            document.getElementById('generator-view').classList.add('hidden-view');
+            document.getElementById('player-view').classList.remove('hidden-view');
 
             try {
-                // Decodificación: Base64 Safe -> Decompress -> JSON
-                const base64 = rawData.replace(/-/g, '+').replace(/_/g, '/');
-                const binaryStr = atob(base64);
-                const charData = binaryStr.split('').map(x => x.charCodeAt(0));
-                const binData = new Uint8Array(charData);
-                const decompressed = pako.inflate(binData, { to: 'string' });
-                
-                currentData = JSON.parse(decompressed);
-                renderPlayerUI();
-                switchView('player');
-            } catch (err) {
-                console.error("Error decodificando datos:", err);
-                alert("El enlace parece estar dañado o incompleto.");
+                const decoded = decodeURIComponent(escape(atob(data64)));
+                movieData = JSON.parse(decoded);
+                renderPlayer();
+            } catch (e) {
+                console.error("Error decodificando data", e);
+                alert("Error al cargar los datos del reproductor.");
             }
         }
 
-        function renderPlayerUI() {
-            document.getElementById('player-empty').classList.add('hidden');
-            document.getElementById('player-active').classList.remove('hidden');
-            
-            const groupsContainer = document.getElementById('language-groups');
-            groupsContainer.innerHTML = "";
+        function renderPlayer() {
+            document.title = movieData.t + " - Sool Player";
+            document.getElementById('display-title').innerText = movieData.t;
+            document.getElementById('display-poster').src = movieData.p;
+            document.getElementById('player-bg').style.backgroundImage = `url(${movieData.p})`;
 
-            // Agrupar por idioma
-            const languages = [...new Set(currentData.map(d => d.lang))];
-            
-            languages.forEach(lang => {
-                const langItems = currentData.filter(d => d.lang === lang);
-                const section = document.createElement('div');
-                section.innerHTML = `
-                    <h4 class="text-sm font-bold uppercase tracking-widest text-slate-500 mb-3 border-l-2 border-indigo-500 pl-3">${lang}</h4>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                        ${langItems.map(item => `
-                            <button onclick="playVideo('${item.url}', '${item.server}', '${item.quality}')" 
-                                    class="bg-white/5 hover:bg-indigo-600 border border-white/10 p-3 rounded-xl transition text-left group">
-                                <div class="text-xs text-slate-400 group-hover:text-indigo-200">${item.server}</div>
-                                <div class="font-bold text-sm">${item.quality}</div>
-                            </button>
-                        `).join('')}
+            // Filtrar idiomas únicos presentes en la data
+            const availableLangs = [...new Set(movieData.s.map(s => s.l))];
+            const langContainer = document.getElementById('language-tabs');
+            langContainer.innerHTML = '';
+
+            availableLangs.forEach((langCode, index) => {
+                const btn = document.createElement('button');
+                btn.className = `px-4 py-2 rounded-full text-sm font-bold transition ${index === 0 ? 'bg-red-600 text-white' : 'hover:bg-white/10'}`;
+                btn.innerHTML = `${languages[langCode].icon} ${languages[langCode].label}`;
+                btn.onclick = (e) => {
+                    document.querySelectorAll('#language-tabs button').forEach(b => b.classList.remove('bg-red-600'));
+                    btn.classList.add('bg-red-600');
+                    showServersByLang(langCode);
+                };
+                langContainer.appendChild(btn);
+            });
+
+            // Mostrar el primer idioma por defecto
+            if (availableLangs.length > 0) showServersByLang(availableLangs[0]);
+        }
+
+        function showServersByLang(langCode) {
+            const grid = document.getElementById('servers-grid');
+            grid.innerHTML = '';
+
+            const filtered = movieData.s.filter(s => s.l === langCode);
+
+            filtered.forEach(srv => {
+                const div = document.createElement('div');
+                div.className = "server-item p-4 rounded-xl cursor-pointer flex flex-col items-center gap-2 border border-white/5";
+                div.innerHTML = `
+                    <div class="w-12 h-12 bg-red-600/20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-play text-red-600"></i>
                     </div>
+                    <span class="font-bold text-sm uppercase">${srv.n}</span>
+                    <span class="text-[10px] bg-zinc-700 px-2 py-0.5 rounded text-gray-300">${srv.q.replace('_', ' ')}</span>
                 `;
-                groupsContainer.appendChild(section);
+                div.onclick = () => loadIframe(srv.u);
+                grid.appendChild(div);
             });
         }
 
-        function playVideo(url, server, quality) {
-            const iframe = document.getElementById('main-iframe');
-            const info = document.getElementById('player-current-info');
-            const selector = document.getElementById('player-selector');
+        function loadIframe(url) {
+            const selector = document.getElementById('server-selector');
+            const wrapper = document.getElementById('video-wrapper');
+            const iframe = document.getElementById('video-iframe');
 
-            iframe.src = url;
-            info.innerText = `${server.toUpperCase()} - ${quality}`;
-            
-            // Ocultar selector con animación simple
             selector.classList.add('hidden');
+            wrapper.classList.remove('hidden');
+            iframe.src = url;
         }
 
-        function showSelector() {
-            document.getElementById('player-selector').classList.remove('hidden');
-            document.getElementById('main-iframe').src = "";
+        function closePlayer() {
+            const selector = document.getElementById('server-selector');
+            const wrapper = document.getElementById('video-wrapper');
+            const iframe = document.getElementById('video-iframe');
+
+            selector.classList.remove('hidden');
+            wrapper.classList.add('hidden');
+            iframe.src = '';
         }
 
-        // --- UTILIDADES DE VISTA ---
-        function switchView(view) {
-            const gen = document.getElementById('view-generator');
-            const play = document.getElementById('view-player');
-            const btnGen = document.getElementById('btn-gen');
-            const btnPlay = document.getElementById('btn-play');
+        // Ejecutar al cargar la página
+        window.onload = initPlayer;
 
-            if (view === 'generator') {
-                gen.classList.remove('hidden');
-                play.classList.add('hidden');
-                btnGen.className = "px-6 py-2 rounded-full bg-blue-600 font-bold hover:bg-blue-700 transition";
-                btnPlay.className = "px-6 py-2 rounded-full glass font-bold hover:bg-slate-700 transition";
-            } else {
-                gen.classList.add('hidden');
-                play.classList.remove('hidden');
-                btnPlay.className = "px-6 py-2 rounded-full bg-blue-600 font-bold hover:bg-blue-700 transition";
-                btnGen.className = "px-6 py-2 rounded-full glass font-bold hover:bg-slate-700 transition";
-            }
-        }
-
-        // Inicialización
-        window.onload = () => {
-            renderEntries();
-            initPlayerFromUrl();
-        };
     </script>
 </body>
 </html>
