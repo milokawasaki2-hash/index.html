@@ -1,357 +1,205 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sool Player - System</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        
-        :root {
-            --primary: #e50914;
-            --bg-dark: #0f0f0f;
-            --bg-card: #1a1a1a;
-            --text-main: #ffffff;
-            --text-dim: #b3b3b3;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sool Player PRO</title>
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            margin: 0;
-            overflow-x: hidden;
-        }
+<style>
+body{
+  margin:0;
+  font-family: Arial;
+  background:#0f0f0f;
+  color:#fff;
+}
 
-        .glass-card {
-            background: rgba(26, 26, 26, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+/* PANEL */
+#panel{
+  padding:20px;
+}
 
-        .btn-netflix {
-            background-color: var(--primary);
-            transition: all 0.3s ease;
-        }
+input, select{
+  padding:10px;
+  margin:5px;
+  border:none;
+  border-radius:5px;
+}
 
-        .btn-netflix:hover {
-            background-color: #ff0a16;
-            transform: scale(1.02);
-        }
+button{
+  padding:10px 15px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+  background:#ff3d00;
+  color:#fff;
+}
 
-        .server-item {
-            background: #252525;
-            transition: transform 0.2s;
-        }
+.server-box{
+  background:#1c1c1c;
+  padding:10px;
+  margin:10px 0;
+  border-radius:8px;
+}
 
-        .server-item:hover {
-            background: #333;
-            transform: translateY(-2px);
-        }
+/* PLAYER */
+#player{
+  display:none;
+  padding:20px;
+}
 
-        /* Reproductor Estilo Netflix */
-        .player-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            filter: brightness(0.2) blur(20px);
-            background-size: cover;
-            background-position: center;
-        }
+.header{
+  background-size:cover;
+  padding:50px;
+}
 
-        iframe {
-            border: none;
-            width: 100%;
-            height: 100%;
-            background: #000;
-        }
+.langs button{
+  margin:5px;
+}
 
-        .hidden-view { display: none; }
-    </style>
+.server{
+  background:#222;
+  padding:10px;
+  margin:5px;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+iframe{
+  width:100%;
+  height:400px;
+  border:none;
+}
+</style>
 </head>
+
 <body>
 
-    <!-- ==========================================
-         PANEL GENERADOR (VISTA 1)
-         ========================================== -->
-    <div id="generator-view" class="container mx-auto px-4 py-10 max-w-4xl">
-        <header class="mb-10 text-center">
-            <h1 class="text-4xl font-bold text-red-600 mb-2 tracking-tighter">SOOL PLAYER <span class="text-white text-lg font-light">| Generador</span></h1>
-            <p class="text-gray-400">Crea enlaces de reproducción dinámicos al instante</p>
-        </header>
+<!-- PANEL -->
+<div id="panel">
+  <h2>🎬 Generador</h2>
 
-        <div class="glass-card rounded-xl p-8 shadow-2xl">
-            <!-- Info General -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div>
-                    <label class="block text-sm font-semibold mb-2 text-gray-300">Título del Video</label>
-                    <input type="text" id="input-title" placeholder="Ej: Avengers: Endgame" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 outline-none focus:border-red-500 transition">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-2 text-gray-300">URL Imagen / Poster</label>
-                    <input type="text" id="input-poster" placeholder="https://imagen.com/poster.jpg" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 outline-none focus:border-red-500 transition">
-                </div>
-            </div>
+  <input id="title" placeholder="Título"><br>
+  <input id="poster" placeholder="Imagen URL"><br>
 
-            <hr class="border-zinc-800 mb-8">
+  <div id="servers"></div>
 
-            <!-- Lista de Servidores -->
-            <div class="mb-4 flex justify-between items-center">
-                <h3 class="text-xl font-semibold">Servidores (Máx 25)</h3>
-                <button onclick="addServerRow()" class="text-sm bg-zinc-700 hover:bg-zinc-600 px-4 py-2 rounded-lg transition">
-                    <i class="fas fa-plus mr-2"></i>Añadir Servidor
-                </button>
-            </div>
+  <button onclick="addServer()">+ Agregar Servidor</button>
+  <button onclick="generate()">Generar Link</button>
 
-            <div id="servers-container" class="space-y-4 mb-10">
-                <!-- Las filas de servidores se insertan aquí -->
-            </div>
+  <p id="result"></p>
+</div>
 
-            <button onclick="generateLink()" class="w-full btn-netflix py-4 rounded-xl font-bold text-lg shadow-lg">
-                GENERAR ENLACE DINÁMICO
-            </button>
+<!-- PLAYER -->
+<div id="player">
+  <div class="header" id="bg">
+    <h1 id="ptitle"></h1>
+  </div>
 
-            <!-- Resultado -->
-            <div id="result-container" class="mt-8 hidden">
-                <label class="block text-sm font-semibold mb-2 text-green-400">¡Enlace Generado!</label>
-                <div class="flex gap-2">
-                    <input type="text" id="output-link" readonly class="w-full bg-black border border-zinc-800 rounded-lg p-3 text-xs font-mono text-gray-400">
-                    <button onclick="copyLink()" class="bg-zinc-700 px-4 rounded-lg hover:bg-zinc-600">Copiar</button>
-                    <button onclick="testLink()" class="bg-blue-600 px-4 rounded-lg hover:bg-blue-500">Probar</button>
-                </div>
-            </div>
-        </div>
-    </div>
+  <div class="langs" id="langs"></div>
 
-    <!-- ==========================================
-         REPRODUCTOR DINÁMICO (VISTA 2)
-         ========================================== -->
-    <div id="player-view" class="hidden-view min-h-screen flex flex-col items-center justify-center p-4">
-        <div id="player-bg" class="player-bg"></div>
-        
-        <!-- Header Info -->
-        <div class="z-10 w-full max-w-5xl mb-6 flex flex-col md:flex-row items-end justify-between gap-4">
-            <div class="flex items-center gap-6">
-                <img id="display-poster" src="" alt="Poster" class="w-24 h-36 object-cover rounded-lg shadow-2xl border border-white/10 hidden md:block">
-                <div>
-                    <h2 id="display-title" class="text-3xl md:text-5xl font-bold text-white drop-shadow-lg">Cargando...</h2>
-                    <p class="text-gray-300 mt-2 font-light">Selecciona un servidor para comenzar la reproducción</p>
-                </div>
-            </div>
-            <div id="language-tabs" class="flex gap-2 bg-black/40 p-2 rounded-full backdrop-blur-md">
-                <!-- Pestañas de idiomas dinámicas -->
-            </div>
-        </div>
+  <div id="list"></div>
 
-        <!-- Main Player Container -->
-        <div id="content-container" class="z-10 w-full max-w-5xl aspect-video glass-card rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] relative">
-            
-            <!-- Selector de Servidores (Grilla) -->
-            <div id="server-selector" class="absolute inset-0 z-20 bg-zinc-900/95 flex flex-col p-8 overflow-y-auto">
-                <div id="servers-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    <!-- Servidores dinámicos aquí -->
-                </div>
-            </div>
+  <div id="video"></div>
+</div>
 
-            <!-- Iframe de Video -->
-            <div id="video-wrapper" class="hidden w-full h-full relative">
-                <button onclick="closePlayer()" class="absolute top-4 left-4 z-30 bg-black/60 hover:bg-red-600 p-3 rounded-full transition group">
-                    <i class="fas fa-arrow-left text-white"></i>
-                    <span class="ml-2 hidden group-hover:inline text-sm font-bold">Volver</span>
-                </button>
-                <iframe id="video-iframe" allowfullscreen></iframe>
-            </div>
-        </div>
-    </div>
+<script>
+function addServer(){
+  let div = document.createElement("div");
+  div.className="server-box";
 
-    <script>
-        // --- CONFIGURACIÓN Y ESTADO ---
-        let serverCount = 0;
-        const languages = {
-            "LAT": { label: "Latino", icon: "🇲🇽" },
-            "ESP": { label: "Castellano", icon: "🇪🇸" },
-            "SUB": { label: "Subtitulado", icon: "🇺🇸" },
-            "JAP": { label: "Japonés", icon: "🇯🇵" },
-            "OTRO": { label: "Otros", icon: "🌐" }
-        };
+  div.innerHTML=`
+    <input placeholder="Servidor">
+    <select>
+      <option>Latino</option>
+      <option>Español</option>
+      <option>Inglés</option>
+      <option>Japonés</option>
+      <option>Otros</option>
+    </select>
+    <input placeholder="Calidad">
+    <input placeholder="URL">
+  `;
 
-        // --- LÓGICA DEL GENERADOR ---
+  document.getElementById("servers").appendChild(div);
+}
 
-        function addServerRow() {
-            if (serverCount >= 25) return;
-            serverCount++;
+function generate(){
+  let title = document.getElementById("title").value;
+  let poster = document.getElementById("poster").value;
 
-            const container = document.getElementById('servers-container');
-            const row = document.createElement('div');
-            row.className = "server-row grid grid-cols-1 md:grid-cols-4 gap-3 bg-zinc-900/50 p-4 rounded-lg border border-zinc-800 relative group";
-            row.innerHTML = `
-                <input type="text" placeholder="Nombre Servidor (Ej: Streamwish)" class="srv-name bg-zinc-800 border border-zinc-700 rounded p-2 text-sm">
-                <select class="srv-lang bg-zinc-800 border border-zinc-700 rounded p-2 text-sm">
-                    <option value="LAT">Español Latino</option>
-                    <option value="ESP">Español (España)</option>
-                    <option value="SUB">Inglés / Sub</option>
-                    <option value="JAP">Japonés</option>
-                    <option value="OTRO">Otros</option>
-                </select>
-                <select class="srv-quality bg-zinc-800 border border-zinc-700 rounded p-2 text-sm">
-                    <option value="FULL_HD">Full HD (1080p)</option>
-                    <option value="HD">HD (720p)</option>
-                    <option value="SD">SD (480p)</option>
-                </select>
-                <input type="text" placeholder="Embed URL (iframe)" class="srv-url bg-zinc-800 border border-zinc-700 rounded p-2 text-sm">
-                <button onclick="this.parentElement.remove(); serverCount--;" class="absolute -right-2 -top-2 bg-red-600 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition">✕</button>
-            `;
-            container.appendChild(row);
-        }
+  let data = {
+    title,
+    poster,
+    list:[]
+  };
 
-        function generateLink() {
-            const title = document.getElementById('input-title').value;
-            const poster = document.getElementById('input-poster').value;
-            const serverRows = document.querySelectorAll('.server-row');
-            
-            const servers = [];
-            serverRows.forEach(row => {
-                servers.push({
-                    n: row.querySelector('.srv-name').value,
-                    l: row.querySelector('.srv-lang').value,
-                    q: row.querySelector('.srv-quality').value,
-                    u: row.querySelector('.srv-url').value
-                });
-            });
+  document.querySelectorAll(".server-box").forEach(box=>{
+    let inputs = box.querySelectorAll("input,select");
+    data.list.push({
+      server:inputs[0].value,
+      lang:inputs[1].value,
+      quality:inputs[2].value,
+      url:inputs[3].value
+    });
+  });
 
-            if (!title || servers.length === 0) {
-                alert("Por favor completa el título y añade al menos un servidor.");
-                return;
-            }
+  let encoded = btoa(JSON.stringify(data));
 
-            const data = { t: title, p: poster, s: servers };
-            const jsonStr = JSON.stringify(data);
-            const base64 = btoa(unescape(encodeURIComponent(jsonStr)));
-            
-            const currentUrl = window.location.origin + window.location.pathname;
-            const finalLink = `${currentUrl}?data=${base64}`;
+  let link = location.pathname + "?data=" + encoded;
 
-            document.getElementById('output-link').value = finalLink;
-            document.getElementById('result-container').classList.remove('hidden');
-        }
+  document.getElementById("result").innerHTML = link;
+}
 
-        function copyLink() {
-            const copyText = document.getElementById("output-link");
-            copyText.select();
-            document.execCommand("copy");
-            alert("¡Enlace copiado al portapapeles!");
-        }
+/* PLAYER LOGIC */
+function loadPlayer(){
+  let params = new URLSearchParams(location.search);
+  let data = params.get("data");
 
-        function testLink() {
-            const link = document.getElementById('output-link').value;
-            window.location.href = link;
-        }
+  if(!data) return;
 
-        // --- LÓGICA DEL REPRODUCTOR ---
+  document.getElementById("panel").style.display="none";
+  document.getElementById("player").style.display="block";
 
-        let movieData = null;
+  let json = JSON.parse(atob(data));
 
-        function initPlayer() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const data64 = urlParams.get('data');
+  document.getElementById("ptitle").innerText = json.title;
+  document.getElementById("bg").style.backgroundImage = `url(${json.poster})`;
 
-            if (!data64) {
-                // Si no hay datos, mostrar 2 servidores de ejemplo por defecto en el panel
-                addServerRow();
-                addServerRow();
-                return;
-            }
+  let langs = [...new Set(json.list.map(x=>x.lang))];
 
-            // Cambiar vista
-            document.getElementById('generator-view').classList.add('hidden-view');
-            document.getElementById('player-view').classList.remove('hidden-view');
+  let langsDiv = document.getElementById("langs");
 
-            try {
-                const decoded = decodeURIComponent(escape(atob(data64)));
-                movieData = JSON.parse(decoded);
-                renderPlayer();
-            } catch (e) {
-                console.error("Error decodificando data", e);
-                alert("Error al cargar los datos del reproductor.");
-            }
-        }
+  langs.forEach(lang=>{
+    let btn = document.createElement("button");
+    btn.innerText = lang;
+    btn.onclick=()=>showList(lang, json.list);
+    langsDiv.appendChild(btn);
+  });
 
-        function renderPlayer() {
-            document.title = movieData.t + " - Sool Player";
-            document.getElementById('display-title').innerText = movieData.t;
-            document.getElementById('display-poster').src = movieData.p;
-            document.getElementById('player-bg').style.backgroundImage = `url(${movieData.p})`;
+  showList(langs[0], json.list);
+}
 
-            // Filtrar idiomas únicos presentes en la data
-            const availableLangs = [...new Set(movieData.s.map(s => s.l))];
-            const langContainer = document.getElementById('language-tabs');
-            langContainer.innerHTML = '';
+function showList(lang, list){
+  let container = document.getElementById("list");
+  container.innerHTML="";
 
-            availableLangs.forEach((langCode, index) => {
-                const btn = document.createElement('button');
-                btn.className = `px-4 py-2 rounded-full text-sm font-bold transition ${index === 0 ? 'bg-red-600 text-white' : 'hover:bg-white/10'}`;
-                btn.innerHTML = `${languages[langCode].icon} ${languages[langCode].label}`;
-                btn.onclick = (e) => {
-                    document.querySelectorAll('#language-tabs button').forEach(b => b.classList.remove('bg-red-600'));
-                    btn.classList.add('bg-red-600');
-                    showServersByLang(langCode);
-                };
-                langContainer.appendChild(btn);
-            });
+  list.filter(x=>x.lang===lang).forEach(item=>{
+    let div = document.createElement("div");
+    div.className="server";
 
-            // Mostrar el primer idioma por defecto
-            if (availableLangs.length > 0) showServersByLang(availableLangs[0]);
-        }
+    div.innerText = item.server+" - "+item.quality;
 
-        function showServersByLang(langCode) {
-            const grid = document.getElementById('servers-grid');
-            grid.innerHTML = '';
+    div.onclick=()=>{
+      document.getElementById("video").innerHTML =
+        `<iframe src="${item.url}" allowfullscreen></iframe>`;
+    };
 
-            const filtered = movieData.s.filter(s => s.l === langCode);
+    container.appendChild(div);
+  });
+}
 
-            filtered.forEach(srv => {
-                const div = document.createElement('div');
-                div.className = "server-item p-4 rounded-xl cursor-pointer flex flex-col items-center gap-2 border border-white/5";
-                div.innerHTML = `
-                    <div class="w-12 h-12 bg-red-600/20 rounded-full flex items-center justify-center">
-                        <i class="fas fa-play text-red-600"></i>
-                    </div>
-                    <span class="font-bold text-sm uppercase">${srv.n}</span>
-                    <span class="text-[10px] bg-zinc-700 px-2 py-0.5 rounded text-gray-300">${srv.q.replace('_', ' ')}</span>
-                `;
-                div.onclick = () => loadIframe(srv.u);
-                grid.appendChild(div);
-            });
-        }
+loadPlayer();
+</script>
 
-        function loadIframe(url) {
-            const selector = document.getElementById('server-selector');
-            const wrapper = document.getElementById('video-wrapper');
-            const iframe = document.getElementById('video-iframe');
-
-            selector.classList.add('hidden');
-            wrapper.classList.remove('hidden');
-            iframe.src = url;
-        }
-
-        function closePlayer() {
-            const selector = document.getElementById('server-selector');
-            const wrapper = document.getElementById('video-wrapper');
-            const iframe = document.getElementById('video-iframe');
-
-            selector.classList.remove('hidden');
-            wrapper.classList.add('hidden');
-            iframe.src = '';
-        }
-
-        // Ejecutar al cargar la página
-        window.onload = initPlayer;
-
-    </script>
 </body>
 </html>
