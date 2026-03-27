@@ -2,275 +2,306 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Generador Múltiple V4</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sool Player System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Librería para compresión y así permitir enlaces más largos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
     <style>
-        :root {
-            --neon-blue: #00d4ff;
-            --bg-dark: #000000;
-            --card-bg: rgba(10, 10, 12, 0.98);
-            --item-hover: rgba(0, 212, 255, 0.15);
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            background-color: var(--bg-dark);
-            color: #fff; font-family: 'Segoe UI', Roboto, sans-serif;
-            overflow: hidden;
+        .aspect-video-custom {
+            aspect-ratio: 16 / 9;
         }
-
-        /* --- GENERADOR --- */
-        #ui-generator {
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; background: #050505; overflow-y: auto; padding: 20px; box-sizing: border-box;
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
         }
-        .card { 
-            background: #000; padding: 25px; border-radius: 15px; border: 1px solid #1a1a1a; 
-            width: 100%; max-width: 550px; box-shadow: 0 0 50px rgba(0,0,0,0.8);
-        }
-        .section-group { margin-bottom: 12px; background: #080808; padding: 12px; border-radius: 8px; border: 1px solid #111; }
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .section-label { color: var(--neon-blue); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; }
-        
-        .btn-add { background: var(--neon-blue); border: none; color: #000; border-radius: 5px; padding: 3px 10px; font-size: 15px; font-weight: bold; cursor: pointer; }
-        .input-list { display: flex; flex-direction: column; gap: 6px; }
-        .input-row { display: flex; gap: 6px; }
-        .btn-del { background: #ff3333; border: none; color: white; border-radius: 5px; padding: 0 10px; cursor: pointer; }
-
-        input { 
-            flex: 1; padding: 10px 14px; background: #000; border: 1px solid #222; 
-            border-radius: 6px; color: #fff; font-size: 12px; outline: none; 
-        }
-        input:focus { border-color: var(--neon-blue); }
-
-        .btn-main { 
-            width: 100%; padding: 14px; background: var(--neon-blue); border: none; 
-            font-weight: 800; border-radius: 6px; cursor: pointer; margin-top: 15px; 
-            text-transform: uppercase; font-size: 11px; color: #000; letter-spacing: 1px;
-        }
-
-        /* --- PLAYER INTERFACE --- */
-        #ui-player {
-            display: none; width: 100%; height: 100vh;
-            justify-content: center; align-items: center;
-            position: relative; background-size: cover; background-position: center;
-        }
-        #overlay-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.95) 100%); z-index: 1; }
-        #content-wrapper { z-index: 10; width: 90%; max-width: 360px; text-align: center; }
-
-        .tabs-audio { display: flex; gap: 6px; margin-bottom: 12px; justify-content: center; flex-wrap: wrap; }
-        .tab-btn { cursor: pointer; text-align: center; opacity: 0.3; transition: 0.3s; min-width: 40px; display: none; }
-        .tab-btn.active { opacity: 1; transform: scale(1.1); }
-        .tab-btn img { width: 24px; height: 16px; border-radius: 2px; display: block; margin: 0 auto 3px; }
-        .tab-btn span { font-size: 7px; font-weight: 800; text-transform: uppercase; color: #fff; }
-
-        /* Lista de Servidores (Tamaño pequeño original) */
-        .server-list { display: none; flex-direction: column; gap: 4px; max-height: 55vh; overflow-y: auto; padding: 2px; scrollbar-width: none; }
-        .server-list.active { display: flex; }
-
-        .server-item {
-            background: var(--card-bg);
-            border-radius: 4px; padding: 7px 12px;
-            display: flex; align-items: center;
-            gap: 10px; cursor: pointer;
-            transition: 0.2s; border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .server-item:hover { background: var(--item-hover); border-color: var(--neon-blue); }
-        .play-icon { color: var(--neon-blue); font-size: 9px; opacity: 0.8; }
-        .server-info h4 { margin: 0; font-size: 9px; font-weight: 700; color: #fff; }
-        .server-info p { margin: 0; font-size: 7px; color: #555; text-transform: uppercase; }
-
-        /* VIDEO CONTAINER */
-        #video-container { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            opacity: 0; visibility: hidden; z-index: 1000; background: #000; 
-        }
-        #video-container.active { opacity: 1; visibility: visible; }
-        #main-ifr { width: 100%; height: 100%; border: none; }
-
-        /* BOTÓN MENÚ A LA DERECHA */
-        #btn-back { 
-            position: absolute; top: 15px; right: 15px; 
-            background: rgba(0,0,0,0.8); color: #fff; 
-            border: 1px solid var(--neon-blue); 
-            padding: 6px 15px; border-radius: 4px; 
-            cursor: pointer; z-index: 2000; 
-            font-size: 10px; font-weight: 900; 
-            text-transform: uppercase; 
-            opacity: 0; display: none;
-            transition: 0.3s;
-        }
-        #btn-back.visible { opacity: 1; display: block; }
-
-        #box-link { display:none; margin-top:10px; border:1px solid #222; padding:10px; background: #050505; border-radius: 6px; }
-        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body oncontextmenu="return false;">
+<body class="min-h-screen p-4 md:p-8">
 
-    <!-- GENERADOR -->
-    <div id="ui-generator">
-        <div class="card">
-            <h2 style="text-align:center; color:var(--neon-blue); margin-top:0; font-size: 18px; margin-bottom: 20px;">GENERADOR MÚLTIPLE V4</h2>
-            <div style="max-height: 450px; overflow-y: auto; padding-right: 5px;">
-                <div class="section-group">
-                    <div class="section-header"><span class="section-label">🇲🇽 Latino</span><button class="btn-add" onclick="addInput('lat')">+</button></div>
-                    <div id="cont-lat" class="input-list"><input type="text" class="lat-in" placeholder="Pegar Link"></div>
+    <div id="app" class="max-w-5xl mx-auto">
+        <!-- Navegación simple -->
+        <nav class="flex gap-4 mb-8 justify-center">
+            <button onclick="switchView('generator')" id="btn-gen" class="px-6 py-2 rounded-full bg-blue-600 font-bold hover:bg-blue-700 transition">Generador</button>
+            <button onclick="switchView('player')" id="btn-play" class="px-6 py-2 rounded-full glass font-bold hover:bg-slate-700 transition">Vista Reproductor</button>
+        </nav>
+
+        <!-- SECCIÓN GENERADOR -->
+        <section id="view-generator" class="space-y-6">
+            <div class="glass p-6 rounded-2xl">
+                <h1 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                    <span>⚙️</span> Configuración de Video
+                </h1>
+                
+                <div id="entries-container" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                    <!-- Las entradas se generarán aquí -->
                 </div>
-                <div class="section-group">
-                    <div class="section-header"><span class="section-label">🇯🇵 Japonés</span><button class="btn-add" onclick="addInput('jap')">+</button></div>
-                    <div id="cont-jap" class="input-list"><input type="text" class="jap-in" placeholder="Pegar Link"></div>
-                </div>
-                <div class="section-group">
-                    <div class="section-header"><span class="section-label">🇪🇸 Castellano</span><button class="btn-add" onclick="addInput('cas')">+</button></div>
-                    <div id="cont-cas" class="input-list"><input type="text" class="cas-in" placeholder="Pegar Link"></div>
-                </div>
-                <div class="section-group">
-                    <div class="section-header"><span class="section-label">🇺🇸 Inglés</span><button class="btn-add" onclick="addInput('ing')">+</button></div>
-                    <div id="cont-ing" class="input-list"><input type="text" class="ing-in" placeholder="Pegar Link"></div>
-                </div>
-                <div class="section-group">
-                    <span class="section-label" style="display:block; margin-bottom: 5px;">Imagen Fondo (URL)</span>
-                    <input type="text" id="bg-in" placeholder="https://..." style="width: 100%; box-sizing: border-box;">
+
+                <div class="mt-6 flex flex-col md:flex-row gap-4 items-center">
+                    <button onclick="addEntry()" class="w-full md:w-auto px-6 py-3 bg-emerald-600 rounded-xl font-bold hover:bg-emerald-700 transition">
+                        + Añadir Servidor (Max 25)
+                    </button>
+                    <button onclick="generateLink()" class="w-full md:w-auto px-6 py-3 bg-indigo-600 rounded-xl font-bold hover:bg-indigo-700 transition">
+                        🔗 Generar Enlace
+                    </button>
                 </div>
             </div>
-            <button class="btn-main" onclick="buildLink()">GENERAR ENLACE</button>
-            <div id="box-link">
-                <input type="text" id="out-url" readonly style="margin-bottom: 8px; font-size: 10px; color: var(--neon-blue); text-align: center; width:100%; box-sizing: border-box;">
-                <button onclick="copyLink()" style="width:100%; background:var(--neon-blue); border:none; padding: 10px; font-weight:bold; border-radius: 4px; color: #000; font-size: 10px; cursor:pointer;">COPIAR</button>
+
+            <!-- Resultado del enlace -->
+            <div id="result-box" class="hidden glass p-6 rounded-2xl border-indigo-500/50">
+                <h2 class="text-lg font-bold mb-2 text-indigo-300">Enlace Generado:</h2>
+                <div class="flex gap-2">
+                    <input id="generated-url" readonly type="text" class="w-full bg-black/40 p-3 rounded-lg border border-white/10 text-sm font-mono focus:outline-none">
+                    <button onclick="copyUrl()" class="px-4 py-2 bg-slate-700 rounded-lg hover:bg-slate-600">Copiar</button>
+                </div>
+                <p class="text-xs text-slate-400 mt-2">* Este enlace contiene toda la configuración comprimida en Base64.</p>
             </div>
-        </div>
+        </section>
+
+        <!-- SECCIÓN REPRODUCTOR (Interpretador) -->
+        <section id="view-player" class="hidden space-y-6">
+            <div id="player-container" class="glass rounded-3xl overflow-hidden shadow-2xl">
+                <!-- Estado Inicial: Sin Datos -->
+                <div id="player-empty" class="p-20 text-center">
+                    <div class="text-6xl mb-4">🎬</div>
+                    <h2 class="text-2xl font-bold">Esperando datos...</h2>
+                    <p class="text-slate-400">Carga un enlace con el parámetro ?data= para ver el contenido.</p>
+                </div>
+
+                <!-- Interface Real del Reproductor -->
+                <div id="player-active" class="hidden">
+                    <!-- Cabecera -->
+                    <div class="p-4 bg-black/40 flex justify-between items-center border-b border-white/5">
+                        <button onclick="showSelector()" class="flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                            Volver a la lista
+                        </button>
+                        <div id="player-current-info" class="text-xs font-bold px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full border border-indigo-500/30">
+                            VOESX - 1080p
+                        </div>
+                    </div>
+
+                    <!-- Iframe -->
+                    <div class="aspect-video-custom bg-black relative">
+                        <iframe id="main-iframe" class="absolute inset-0 w-full h-full" src="" frameborder="0" allowfullscreen></iframe>
+                    </div>
+
+                    <!-- Selector de Idiomas y Servidores (Modal/Overlay) -->
+                    <div id="player-selector" class="p-6 bg-slate-900/95">
+                        <h3 class="text-xl font-bold mb-6 text-center">Selecciona una opción de reproducción</h3>
+                        
+                        <div id="language-groups" class="space-y-8">
+                            <!-- Grupos por idioma se inyectan aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 
-    <!-- PLAYER -->
-    <div id="ui-player" onmousemove="triggerControls()" ontouchstart="triggerControls()" onclick="triggerControls()">
-        <div id="overlay-bg"></div>
-        <button id="btn-back" onclick="closeVideo()">MENÚ</button>
+    <script>
+        // --- LÓGICA DEL GENERADOR ---
+        let entries = [
+            { server: 'Streamwish', lang: 'Latino', quality: '1080p', url: '' }
+        ];
 
-        <div id="content-wrapper">
-            <div class="tabs-audio">
-                <div class="tab-btn" id="btn-lat" onclick="switchAudio('lat')"><img src="https://flagcdn.com/w80/mx.png"><span>Latino</span></div>
-                <div class="tab-btn" id="btn-jap" onclick="switchAudio('jap')"><img src="https://flagcdn.com/w80/jp.png"><span>Japonés</span></div>
-                <div class="tab-btn" id="btn-cas" onclick="switchAudio('cas')"><img src="https://flagcdn.com/w80/es.png"><span>Español</span></div>
-                <div class="tab-btn" id="btn-ing" onclick="switchAudio('ing')"><img src="https://flagcdn.com/w80/us.png"><span>Inglés</span></div>
-            </div>
-            <div id="list-lat" class="server-list"></div>
-            <div id="list-jap" class="server-list"></div>
-            <div id="list-cas" class="server-list"></div>
-            <div id="list-ing" class="server-list"></div>
-        </div>
-
-        <div id="video-container" onmousemove="triggerControls()" ontouchstart="triggerControls()" onclick="triggerControls()">
-            <!-- Iframe con permisos totales y manejo de fullscreen -->
-            <iframe id="main-ifr" 
-                src="" 
-                allow="autoplay; fullscreen; picture-in-picture" 
-                allowfullscreen="true" 
-                webkitallowfullscreen="true" 
-                mozallowfullscreen="true">
-            </iframe>
-        </div>
-    </div>
-
-<script>
-    let hideTimeout;
-
-    // Función para detectar si el usuario intenta poner pantalla completa y permitirlo
-    document.addEventListener("fullscreenchange", function() {
-        // Logica para sincronizar estados si fuera necesario
-    });
-
-    function triggerControls() {
-        const btn = document.getElementById('btn-back');
-        const container = document.getElementById('video-container');
-        
-        if (container.classList.contains('active')) {
-            btn.style.display = 'block';
-            setTimeout(() => btn.classList.add('visible'), 10);
-            
-            clearTimeout(hideTimeout);
-            hideTimeout = setTimeout(() => {
-                btn.classList.remove('visible');
-                setTimeout(() => { if(!btn.classList.contains('visible')) btn.style.display = 'none'; }, 300);
-            }, 3500); 
+        function addEntry() {
+            if (entries.length >= 25) return;
+            entries.push({ server: 'Streamwish', lang: 'Latino', quality: '1080p', url: '' });
+            renderEntries();
         }
-    }
 
-    function addInput(lang) {
-        const container = document.getElementById(`cont-${lang}`);
-        const div = document.createElement('div');
-        div.className = 'input-row';
-        div.innerHTML = `<input type="text" class="${lang}-in" placeholder="Link"><button class="btn-del" onclick="this.parentElement.remove()">×</button>`;
-        container.appendChild(div);
-    }
+        function removeEntry(index) {
+            entries.splice(index, 1);
+            renderEntries();
+        }
 
-    const q = new URLSearchParams(window.location.search);
-    const v = q.get('v');
+        function updateEntry(index, field, value) {
+            entries[index][field] = value;
+        }
 
-    if (v) {
-        document.getElementById('ui-generator').style.display = 'none';
-        document.getElementById('ui-player').style.display = 'flex';
-        try {
-            const data = JSON.parse(decodeURIComponent(escape(atob(v))));
-            if (data.bg) document.getElementById('ui-player').style.backgroundImage = `url('${data.bg}')`;
-            const order = ['lat', 'jap', 'cas', 'ing'];
-            const names = ['Latino', 'Japonés', 'Castellano', 'Inglés'];
-            let first = null;
-            order.forEach((l, i) => {
-                if (data[l]) {
-                    const links = data[l].filter(u => u && u.trim() !== "");
-                    if (links.length > 0) {
-                        const list = document.getElementById(`list-${l}`);
-                        links.forEach((url, idx) => {
-                            const item = document.createElement('div');
-                            item.className = 'server-item';
-                            item.onclick = (e) => {
-                                e.stopPropagation();
-                                document.getElementById('main-ifr').src = url;
-                                document.getElementById('video-container').classList.add('active');
-                                triggerControls();
-                            };
-                            item.innerHTML = `<div class="play-icon">▶</div><div class="server-info"><h4>OPCIÓN ${idx+1}</h4><p>${names[i]}</p></div>`;
-                            list.appendChild(item);
-                        });
-                        document.getElementById(`btn-${l}`).style.display = 'block';
-                        if (!first) first = l;
-                    }
+        function renderEntries() {
+            const container = document.getElementById('entries-container');
+            container.innerHTML = entries.map((e, i) => `
+                <div class="flex flex-wrap gap-2 p-4 bg-white/5 rounded-xl border border-white/10 items-end">
+                    <div class="flex-1 min-w-[120px]">
+                        <label class="block text-xs text-slate-400 mb-1">Servidor</label>
+                        <select onchange="updateEntry(${i}, 'server', this.value)" class="w-full bg-slate-800 p-2 rounded border border-white/10 text-sm">
+                            <option ${e.server === 'Streamwish' ? 'selected' : ''}>Streamwish</option>
+                            <option ${e.server === 'Filemoon' ? 'selected' : ''}>Filemoon</option>
+                            <option ${e.server === 'Voesx' ? 'selected' : ''}>Voesx</option>
+                            <option ${e.server === 'Doodstream' ? 'selected' : ''}>Doodstream</option>
+                            <option ${e.server === 'Streamtape' ? 'selected' : ''}>Streamtape</option>
+                            <option ${e.server === 'Netu' ? 'selected' : ''}>Netu</option>
+                            <option ${e.server === 'Vidhide' ? 'selected' : ''}>Vidhide</option>
+                            <option ${e.server === 'Plustream' ? 'selected' : ''}>Plustream</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 min-w-[120px]">
+                        <label class="block text-xs text-slate-400 mb-1">Idioma</label>
+                        <select onchange="updateEntry(${i}, 'lang', this.value)" class="w-full bg-slate-800 p-2 rounded border border-white/10 text-sm">
+                            <option ${e.lang === 'Latino' ? 'selected' : ''}>Latino</option>
+                            <option ${e.lang === 'Español' ? 'selected' : ''}>Español</option>
+                            <option ${e.lang === 'Inglés' ? 'selected' : ''}>Inglés</option>
+                            <option ${e.lang === 'Japonés' ? 'selected' : ''}>Japonés</option>
+                            <option ${e.lang === 'Otros' ? 'selected' : ''}>Otros</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 min-w-[80px]">
+                        <label class="block text-xs text-slate-400 mb-1">Calidad</label>
+                        <input type="text" value="${e.quality}" oninput="updateEntry(${i}, 'quality', this.value)" class="w-full bg-slate-800 p-2 rounded border border-white/10 text-sm">
+                    </div>
+                    <div class="flex-[2] min-w-[200px]">
+                        <label class="block text-xs text-slate-400 mb-1">URL Embed</label>
+                        <input type="text" value="${e.url}" placeholder="https://..." oninput="updateEntry(${i}, 'url', this.value)" class="w-full bg-slate-800 p-2 rounded border border-white/10 text-sm">
+                    </div>
+                    <button onclick="removeEntry(${i})" class="p-2 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 transition">🗑️</button>
+                </div>
+            `).join('');
+        }
+
+        function generateLink() {
+            try {
+                // Filtramos entradas vacías
+                const data = entries.filter(e => e.url.trim() !== "");
+                if (data.length === 0) {
+                    alert("Agrega al menos una URL de video.");
+                    return;
                 }
+
+                // Codificación: JSON -> GZIP -> Base64 Safe
+                const jsonStr = JSON.stringify(data);
+                const compressed = pako.deflate(jsonStr);
+                const base64 = btoa(String.fromCharCode.apply(null, compressed))
+                                .replace(/\+/g, '-')
+                                .replace(/\//g, '_')
+                                .replace(/=+$/, '');
+
+                const baseUrl = window.location.origin + window.location.pathname;
+                const fullUrl = `${baseUrl}?data=${base64}`;
+
+                document.getElementById('generated-url').value = fullUrl;
+                document.getElementById('result-box').classList.remove('hidden');
+                
+                // Animación de scroll
+                document.getElementById('result-box').scrollIntoView({ behavior: 'smooth' });
+            } catch (err) {
+                console.error(err);
+                alert("Error al generar el enlace.");
+            }
+        }
+
+        function copyUrl() {
+            const el = document.getElementById('generated-url');
+            el.select();
+            document.execCommand('copy');
+            alert("¡Enlace copiado al portapapeles!");
+        }
+
+        // --- LÓGICA DEL REPRODUCTOR ---
+        let currentData = [];
+
+        function initPlayerFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const rawData = params.get('data');
+
+            if (!rawData) return;
+
+            try {
+                // Decodificación: Base64 Safe -> Decompress -> JSON
+                const base64 = rawData.replace(/-/g, '+').replace(/_/g, '/');
+                const binaryStr = atob(base64);
+                const charData = binaryStr.split('').map(x => x.charCodeAt(0));
+                const binData = new Uint8Array(charData);
+                const decompressed = pako.inflate(binData, { to: 'string' });
+                
+                currentData = JSON.parse(decompressed);
+                renderPlayerUI();
+                switchView('player');
+            } catch (err) {
+                console.error("Error decodificando datos:", err);
+                alert("El enlace parece estar dañado o incompleto.");
+            }
+        }
+
+        function renderPlayerUI() {
+            document.getElementById('player-empty').classList.add('hidden');
+            document.getElementById('player-active').classList.remove('hidden');
+            
+            const groupsContainer = document.getElementById('language-groups');
+            groupsContainer.innerHTML = "";
+
+            // Agrupar por idioma
+            const languages = [...new Set(currentData.map(d => d.lang))];
+            
+            languages.forEach(lang => {
+                const langItems = currentData.filter(d => d.lang === lang);
+                const section = document.createElement('div');
+                section.innerHTML = `
+                    <h4 class="text-sm font-bold uppercase tracking-widest text-slate-500 mb-3 border-l-2 border-indigo-500 pl-3">${lang}</h4>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        ${langItems.map(item => `
+                            <button onclick="playVideo('${item.url}', '${item.server}', '${item.quality}')" 
+                                    class="bg-white/5 hover:bg-indigo-600 border border-white/10 p-3 rounded-xl transition text-left group">
+                                <div class="text-xs text-slate-400 group-hover:text-indigo-200">${item.server}</div>
+                                <div class="font-bold text-sm">${item.quality}</div>
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                groupsContainer.appendChild(section);
             });
-            if (first) switchAudio(first);
-        } catch(e) {}
-    }
+        }
 
-    function switchAudio(lang) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.server-list').forEach(l => l.classList.remove('active'));
-        document.getElementById('btn-' + lang).classList.add('active');
-        document.getElementById('list-' + lang).classList.add('active');
-    }
+        function playVideo(url, server, quality) {
+            const iframe = document.getElementById('main-iframe');
+            const info = document.getElementById('player-current-info');
+            const selector = document.getElementById('player-selector');
 
-    function buildLink() {
-        const getVals = cls => Array.from(document.querySelectorAll(cls)).map(i => i.value.trim());
-        const data = { lat: getVals('.lat-in'), jap: getVals('.jap-in'), cas: getVals('.cas-in'), ing: getVals('.ing-in'), bg: document.getElementById('bg-in').value };
-        const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-        document.getElementById('out-url').value = window.location.origin + window.location.pathname + "?v=" + encoded;
-        document.getElementById('box-link').style.display = 'block';
-    }
+            iframe.src = url;
+            info.innerText = `${server.toUpperCase()} - ${quality}`;
+            
+            // Ocultar selector con animación simple
+            selector.classList.add('hidden');
+        }
 
-    function copyLink() {
-        const inp = document.getElementById('out-url');
-        inp.select();
-        document.execCommand("copy");
-    }
+        function showSelector() {
+            document.getElementById('player-selector').classList.remove('hidden');
+            document.getElementById('main-iframe').src = "";
+        }
 
-    function closeVideo() {
-        document.getElementById('video-container').classList.remove('active');
-        document.getElementById('btn-back').classList.remove('visible');
-        document.getElementById('btn-back').style.display = 'none';
-        document.getElementById('main-ifr').src = '';
-        clearTimeout(hideTimeout);
-    }
-</script>
+        // --- UTILIDADES DE VISTA ---
+        function switchView(view) {
+            const gen = document.getElementById('view-generator');
+            const play = document.getElementById('view-player');
+            const btnGen = document.getElementById('btn-gen');
+            const btnPlay = document.getElementById('btn-play');
+
+            if (view === 'generator') {
+                gen.classList.remove('hidden');
+                play.classList.add('hidden');
+                btnGen.className = "px-6 py-2 rounded-full bg-blue-600 font-bold hover:bg-blue-700 transition";
+                btnPlay.className = "px-6 py-2 rounded-full glass font-bold hover:bg-slate-700 transition";
+            } else {
+                gen.classList.add('hidden');
+                play.classList.remove('hidden');
+                btnPlay.className = "px-6 py-2 rounded-full bg-blue-600 font-bold hover:bg-blue-700 transition";
+                btnGen.className = "px-6 py-2 rounded-full glass font-bold hover:bg-slate-700 transition";
+            }
+        }
+
+        // Inicialización
+        window.onload = () => {
+            renderEntries();
+            initPlayerFromUrl();
+        };
+    </script>
 </body>
 </html>
