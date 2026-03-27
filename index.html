@@ -8,8 +8,8 @@
 <style>
 body{
   margin:0;
-  font-family:Arial;
-  background:#0b0b0b;
+  font-family:sans-serif;
+  background:#000;
   color:#fff;
 }
 
@@ -20,42 +20,28 @@ body{
   margin:auto;
 }
 
-h2{margin-bottom:10px;}
-
 input, select{
   width:100%;
   padding:10px;
   margin:5px 0;
+  background:#111;
   border:none;
-  border-radius:6px;
-  background:#1c1c1c;
   color:#fff;
+  border-radius:6px;
 }
 
 button{
   padding:10px;
+  margin:5px 0;
+  background:#ff3d00;
   border:none;
+  color:#fff;
   border-radius:6px;
   cursor:pointer;
-  margin:5px 0;
-}
-
-.btn-main{
-  background:#ff3d00;
-  color:#fff;
-}
-
-.server-box{
-  background:#141414;
-  padding:10px;
-  margin:10px 0;
-  border-radius:8px;
 }
 
 /* PLAYER */
-#player{
-  display:none;
-}
+#player{display:none;}
 
 .header{
   height:200px;
@@ -63,24 +49,51 @@ button{
   display:flex;
   align-items:end;
   padding:20px;
+  background-position:center;
 }
 
 .langs{
+  display:flex;
+  overflow:auto;
   padding:10px;
 }
 
 .langs button{
-  margin:5px;
-  background:#222;
-  color:#fff;
+  background:#111;
+  margin-right:10px;
+  border-radius:20px;
+  padding:8px 15px;
 }
 
 .server{
-  background:#1c1c1c;
-  padding:10px;
-  margin:8px;
-  border-radius:6px;
+  display:flex;
+  align-items:center;
+  background:rgba(255,255,255,0.05);
+  margin:10px;
+  padding:15px;
+  border-radius:10px;
   cursor:pointer;
+  transition:0.3s;
+}
+
+.server:hover{
+  background:rgba(255,255,255,0.15);
+  transform:scale(1.02);
+}
+
+.server img{
+  width:40px;
+  margin-right:15px;
+}
+
+.server-info{
+  display:flex;
+  flex-direction:column;
+}
+
+.video-box{
+  display:none;
+  position:relative;
 }
 
 iframe{
@@ -89,12 +102,14 @@ iframe{
   border:none;
 }
 
-/* LINK BOX */
-#result{
-  background:#111;
-  padding:10px;
-  margin-top:10px;
-  word-break:break-all;
+.back{
+  position:absolute;
+  top:10px;
+  left:10px;
+  background:#000;
+  padding:8px 12px;
+  border-radius:5px;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -106,15 +121,14 @@ iframe{
   <h2>🎬 Generador PRO</h2>
 
   <input id="title" placeholder="Título">
-  <input id="poster" placeholder="Imagen URL">
+  <input id="poster" placeholder="Imagen fondo">
 
   <div id="servers"></div>
 
-  <button class="btn-main" onclick="addServer()">+ Agregar Servidor</button>
-  <button class="btn-main" onclick="generate()">Generar Link</button>
+  <button onclick="addServer()">+ Agregar Servidor</button>
+  <button onclick="generate()">Generar Link</button>
 
   <div id="result"></div>
-  <button onclick="copyLink()">Copiar Link</button>
 </div>
 
 <!-- PLAYER -->
@@ -126,16 +140,30 @@ iframe{
   <div class="langs" id="langs"></div>
 
   <div id="list"></div>
-  <div id="video"></div>
+
+  <div class="video-box" id="videoBox">
+    <div class="back" onclick="back()">⬅ Volver</div>
+    <iframe id="frame"></iframe>
+  </div>
 </div>
 
 <script>
-function addServer(){
-  let div = document.createElement("div");
-  div.className="server-box";
+// ICONOS SERVIDORES
+const icons={
+  streamwish:"https://i.imgur.com/8qR8Z8T.png",
+  filemoon:"https://i.imgur.com/kL9Z9ZP.png",
+  voesx:"https://i.imgur.com/Tk3Qb8O.png",
+  doodstream:"https://i.imgur.com/9Z6Z9Z9.png",
+  streamtape:"https://i.imgur.com/jZ7Z7Z7.png",
+  netu:"https://i.imgur.com/YZ8Z8Z8.png",
+  vidhide:"https://i.imgur.com/QZ9Z9Z9.png",
+  plustream:"https://i.imgur.com/PZ5Z5Z5.png"
+};
 
+function addServer(){
+  let div=document.createElement("div");
   div.innerHTML=`
-    <input placeholder="Servidor">
+    <input placeholder="Servidor (streamwish...)">
     <select>
       <option>Latino</option>
       <option>Español</option>
@@ -143,90 +171,97 @@ function addServer(){
       <option>Japonés</option>
       <option>Otros</option>
     </select>
-    <input placeholder="Calidad">
+    <input placeholder="Calidad (FULL_HD)">
     <input placeholder="URL embed">
   `;
-
   document.getElementById("servers").appendChild(div);
 }
 
 function generate(){
-  let data = {
-    title:document.getElementById("title").value,
-    poster:document.getElementById("poster").value,
+  let data={
+    title:title.value,
+    poster:poster.value,
     list:[]
   };
 
-  document.querySelectorAll(".server-box").forEach(box=>{
-    let i = box.querySelectorAll("input,select");
+  document.querySelectorAll("#servers div").forEach(d=>{
+    let i=d.querySelectorAll("input,select");
     data.list.push({
-      server:i[0].value,
+      server:i[0].value.toLowerCase(),
       lang:i[1].value,
       quality:i[2].value,
       url:i[3].value
     });
   });
 
-  let encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-
-  let fullURL = window.location.origin + window.location.pathname + "?data=" + encoded;
-
-  document.getElementById("result").innerText = fullURL;
-}
-
-function copyLink(){
-  let text = document.getElementById("result").innerText;
-  navigator.clipboard.writeText(text);
-  alert("Link copiado 🔥");
+  let link=location.origin+location.pathname+"?data="+btoa(JSON.stringify(data));
+  result.innerText=link;
 }
 
 /* PLAYER */
-function loadPlayer(){
-  let params = new URLSearchParams(location.search);
-  let data = params.get("data");
+function load(){
+  let p=new URLSearchParams(location.search).get("data");
+  if(!p) return;
 
-  if(!data) return;
+  panel.style.display="none";
+  player.style.display="block";
 
-  document.getElementById("panel").style.display="none";
-  document.getElementById("player").style.display="block";
+  let data=JSON.parse(atob(p));
 
-  let json = JSON.parse(decodeURIComponent(escape(atob(data))));
+  ptitle.innerText=data.title;
+  bg.style.backgroundImage=`url(${data.poster})`;
 
-  document.getElementById("ptitle").innerText = json.title;
-  document.getElementById("bg").style.backgroundImage = `url(${json.poster})`;
+  let langs=[...new Set(data.list.map(x=>x.lang))];
 
-  let langs = [...new Set(json.list.map(x=>x.lang))];
-
-  langs.forEach(lang=>{
-    let btn = document.createElement("button");
-    btn.innerText = lang;
-    btn.onclick=()=>showList(lang, json.list);
-    document.getElementById("langs").appendChild(btn);
+  langs.forEach(l=>{
+    let b=document.createElement("button");
+    b.innerText=l;
+    b.onclick=()=>show(l,data.list);
+    langsDiv.appendChild(b);
   });
 
-  showList(langs[0], json.list);
+  show(langs[0],data.list);
 }
 
-function showList(lang, list){
-  let container = document.getElementById("list");
-  container.innerHTML="";
+function show(lang,list){
+  listDiv.innerHTML="";
+  videoBox.style.display="none";
 
-  list.filter(x=>x.lang===lang).forEach(item=>{
-    let div = document.createElement("div");
-    div.className="server";
+  list.filter(x=>x.lang==lang).forEach(item=>{
+    let d=document.createElement("div");
+    d.className="server";
 
-    div.innerText = item.server + " - " + item.quality;
+    let icon=icons[item.server]||"";
 
-    div.onclick=()=>{
-      document.getElementById("video").innerHTML =
-        `<iframe src="${item.url}" allowfullscreen></iframe>`;
+    d.innerHTML=`
+      <img src="${icon}">
+      <div class="server-info">
+        <b>${item.server.toUpperCase()}</b>
+        <span>Audio: ${item.lang} - Calidad: ${item.quality}</span>
+      </div>
+    `;
+
+    d.onclick=()=>{
+      frame.src=item.url;
+      videoBox.style.display="block";
+      listDiv.style.display="none";
     };
 
-    container.appendChild(div);
+    listDiv.appendChild(d);
   });
+
+  listDiv.style.display="block";
 }
 
-loadPlayer();
+function back(){
+  videoBox.style.display="none";
+  listDiv.style.display="block";
+}
+
+let langsDiv=document.getElementById("langs");
+let listDiv=document.getElementById("list");
+
+load();
 </script>
 
 </body>
