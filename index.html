@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Player Pro | Controles Nativos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SISTEMA MULTI-AUDIO PRO | Editor</title>
     <style>
         :root {
             --neon-blue: #00d4ff;
@@ -23,128 +23,144 @@
         /* --- GENERADOR --- */
         #ui-generator {
             display: none;
-            justify-content: center; align-items: center;
-            height: 100vh; background: #050505; overflow-y: auto; padding: 20px; box-sizing: border-box;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #050505;
+            padding: 10px;
+            box-sizing: border-box;
         }
         .card { 
-            background: #000; padding: 20px; border-radius: 12px; border: 1px solid #1a1a1a; 
-            width: 100%; max-width: 450px; box-shadow: 0 0 50px rgba(0,0,0,0.9);
+            background: #000; padding: 15px; border-radius: 12px; border: 1px solid #1a1a1a; 
+            width: 100%; max-width: 550px;
+            max-height: 95vh;
+            display: flex; flex-direction: column;
+            box-shadow: 0 0 30px rgba(0,0,0,0.9);
         }
-        .section-group { margin-bottom: 12px; background: #080808; padding: 10px; border-radius: 8px; border: 1px solid #111; }
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .section-label { color: var(--neon-blue); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; }
         
-        .btn-add { background: var(--neon-blue); border: none; color: #000; border-radius: 4px; padding: 2px 8px; font-size: 14px; font-weight: bold; cursor: pointer; }
-        .input-list { display: flex; flex-direction: column; gap: 5px; }
-        .input-row { display: flex; gap: 5px; }
-        .btn-del { background: #ff3333; border: none; color: white; border-radius: 4px; padding: 0 8px; cursor: pointer; font-size: 12px; }
+        .main-title {
+            text-align: center; color: var(--neon-blue); 
+            margin: 0 0 10px 0; font-size: 22px; 
+            font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase;
+        }
+
+        /* Área de Importación */
+        .import-box {
+            background: #111; padding: 10px; border-radius: 8px; margin-bottom: 12px;
+            border: 1px dashed var(--neon-blue);
+        }
+
+        #inputs-scroll-area {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-right: 5px;
+            margin-bottom: 10px;
+        }
+
+        .section-group { margin-bottom: 8px; background: #080808; padding: 8px; border-radius: 8px; border: 1px solid #111; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .section-label { color: var(--neon-blue); font-size: 10px; font-weight: 800; text-transform: uppercase; }
+        
+        .btn-add { background: var(--neon-blue); border: none; color: #000; border-radius: 4px; padding: 2px 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .input-list { display: flex; flex-direction: column; gap: 4px; }
+        .input-row { display: flex; gap: 4px; }
+        .btn-del { background: #ff3333; border: none; color: white; border-radius: 4px; padding: 0 8px; cursor: pointer; }
 
         input { 
-            flex: 1; padding: 8px 12px; background: #000; border: 1px solid #222; 
+            flex: 1; padding: 8px 10px; background: #000; border: 1px solid #222; 
             border-radius: 5px; color: #fff; font-size: 11px; outline: none; 
         }
         input:focus { border-color: var(--neon-blue); }
 
         .btn-main { 
-            width: 100%; padding: 14px; background: var(--neon-blue); border: none; 
-            font-weight: 800; border-radius: 6px; cursor: pointer; margin-top: 10px; 
-            text-transform: uppercase; font-size: 11px; color: #000; letter-spacing: 1px;
+            width: 100%; padding: 12px; background: var(--neon-blue); border: none; 
+            font-weight: 800; border-radius: 6px; cursor: pointer;
+            text-transform: uppercase; font-size: 11px; color: #000;
         }
 
-        /* --- PLAYER INTERFACE --- */
+        .btn-import {
+            background: #222; color: var(--neon-blue); border: 1px solid var(--neon-blue);
+            padding: 8px; width: 100%; border-radius: 5px; font-size: 10px; cursor: pointer;
+            margin-top: 5px; font-weight: bold;
+        }
+
+        /* --- PLAYER --- */
         #ui-player {
             display: none; width: 100%; height: 100vh;
             justify-content: center; align-items: center;
             position: relative; background-size: cover; background-position: center;
         }
         #overlay-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.95) 100%); z-index: 1; }
+        #content-wrapper { z-index: 10; width: 95%; max-width: 800px; text-align: center; }
 
-        #content-wrapper { z-index: 10; width: 90%; max-width: 360px; text-align: center; }
-
-        .tabs-audio { display: flex; gap: 6px; margin-bottom: 12px; justify-content: center; flex-wrap: wrap; }
-        .tab-btn { cursor: pointer; text-align: center; opacity: 0.3; transition: 0.3s; min-width: 40px; display: none; }
+        .tabs-audio { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; flex-wrap: wrap; }
+        .tab-btn { cursor: pointer; text-align: center; opacity: 0.4; transition: 0.3s; display: none; }
         .tab-btn.active { opacity: 1; transform: scale(1.1); }
-        .tab-btn img { width: 24px; height: 16px; border-radius: 2px; display: block; margin: 0 auto 3px; }
-        .tab-btn span { font-size: 7px; font-weight: 800; text-transform: uppercase; color: #fff; }
+        .tab-btn img { width: 35px; height: 22px; border-radius: 3px; display: block; margin: 0 auto 4px; }
+        .tab-btn span { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #fff; }
 
-        .server-list { display: none; flex-direction: column; gap: 4px; max-height: 55vh; overflow-y: auto; padding: 2px; scrollbar-width: none; }
-        .server-list.active { display: flex; }
-
-        .server-item {
-            background: var(--card-bg);
-            border-radius: 4px; padding: 7px 12px;
-            display: flex; align-items: center;
-            gap: 10px; cursor: pointer;
-            transition: 0.2s; border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .server-item:hover { background: var(--item-hover); border-color: var(--neon-blue); }
-        .play-icon { color: var(--neon-blue); font-size: 9px; opacity: 0.8; }
+        .server-list { display: none; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; max-height: 60vh; overflow-y: auto; padding: 5px; }
+        .server-list.active { display: grid; }
+        .server-item { background: var(--card-bg); border-radius: 6px; padding: 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); }
         
-        .server-info h4 { margin: 0; font-size: 9px; font-weight: 700; color: #fff; }
-        .server-info p { margin: 0; font-size: 7px; color: #555; text-transform: uppercase; }
-
-        /* Contenedor de Video */
-        #video-container { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            opacity: 0; visibility: hidden; z-index: 100; background: #000; 
-        }
+        #video-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; visibility: hidden; z-index: 100; background: #000; }
         #video-container.active { opacity: 1; visibility: visible; }
-        
         iframe { width: 100%; height: 100%; border: none; }
 
-        /* Icono de Menú Flotante */
-        #btn-back { 
-            position: absolute; top: 15px; right: 15px; 
-            background: rgba(0,0,0,0.6); color: var(--neon-blue); 
-            border: 1px solid var(--neon-blue); 
-            width: 35px; height: 35px;
-            border-radius: 50%; 
-            cursor: pointer; z-index: 200; 
-            display: none;
-            align-items: center; justify-content: center;
-            transition: opacity 0.5s ease;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            opacity: 1;
-        }
-        #btn-back svg { width: 18px; height: 18px; fill: currentColor; }
-        #btn-back.idle { opacity: 0.5; }
-        #btn-back:hover, #btn-back:active { opacity: 1 !important; }
+        #btn-back { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.7); color: var(--neon-blue); border: 1px solid var(--neon-blue); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; z-index: 200; display: none; align-items: center; justify-content: center; }
 
-        #box-link { display:none; margin-top:10px; border:1px solid #222; padding:10px; background: #050505; border-radius: 6px; }
-        ::-webkit-scrollbar { display: none; }
+        #box-link { display:none; margin-top:10px; border:1px solid #222; padding:8px; background: #050505; border-radius: 8px; }
+
+        @media (max-width: 600px) {
+            .main-title { font-size: 19px; }
+            .card { padding: 10px; }
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <div id="ui-generator">
         <div class="card">
-            <h2 style="text-align:center; color:var(--neon-blue); margin-top:0; font-size: 16px;">SISTEMA MULTI-AUDIO PRO</h2>
+            <h2 class="main-title">SISTEMA MULTI-AUDIO PRO</h2>
             
-            <div style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
-                <div class="section-group">
-                    <div class="section-header"><span class="section-label">🇲🇽 Latino</span><button class="btn-add" onclick="addInput('lat')">+</button></div>
-                    <div id="cont-lat" class="input-list"><input type="text" class="lat-in" placeholder="Pegar Link"></div>
-                </div>
+            <div class="import-box">
+                <span class="section-label">¿Editar link anterior?</span>
+                <input type="text" id="import-url" placeholder="Pega aquí el link generado antes...">
+                <button class="btn-import" onclick="importData()">CARGAR DATOS PARA EDITAR</button>
+            </div>
+
+            <div id="inputs-scroll-area">
                 <div class="section-group">
                     <div class="section-header"><span class="section-label">🇯🇵 Japonés</span><button class="btn-add" onclick="addInput('jap')">+</button></div>
-                    <div id="cont-jap" class="input-list"><input type="text" class="jap-in" placeholder="Pegar Link"></div>
+                    <div id="cont-jap" class="input-list"></div>
+                </div>
+                <div class="section-group">
+                    <div class="section-header"><span class="section-label">🇲🇽 Latino</span><button class="btn-add" onclick="addInput('lat')">+</button></div>
+                    <div id="cont-lat" class="input-list"></div>
                 </div>
                 <div class="section-group">
                     <div class="section-header"><span class="section-label">🇪🇸 Castellano</span><button class="btn-add" onclick="addInput('cas')">+</button></div>
-                    <div id="cont-cas" class="input-list"><input type="text" class="cas-in" placeholder="Pegar Link"></div>
+                    <div id="cont-cas" class="input-list"></div>
                 </div>
                 <div class="section-group">
                     <div class="section-header"><span class="section-label">🇺🇸 Inglés</span><button class="btn-add" onclick="addInput('ing')">+</button></div>
-                    <div id="cont-ing" class="input-list"><input type="text" class="ing-in" placeholder="Pegar Link"></div>
+                    <div id="cont-ing" class="input-list"></div>
                 </div>
-                <span class="section-label" style="display:block; margin: 8px 0 5px;">Fondo (URL)</span>
-                <input type="text" id="bg-in" placeholder="https://..." style="width: 100%;">
+                <div class="section-group">
+                    <span class="section-label" style="display:block; margin-bottom: 4px;">Fondo (URL)</span>
+                    <input type="text" id="bg-in" placeholder="URL Imagen de fondo" style="width: 100%; box-sizing: border-box;">
+                </div>
             </div>
             
-            <button class="btn-main" onclick="buildLink()">GENERAR ENLACE REPRODUCTOR</button>
+            <button class="btn-main" onclick="buildLink()">GENERAR ENLACE ACTUALIZADO</button>
+            
             <div id="box-link">
-                <input type="text" id="out-url" readonly style="margin-bottom: 8px; font-size: 9px; color: var(--neon-blue); text-align: center;">
-                <button onclick="copyLink()" style="width:100%; background:var(--neon-blue); border:none; padding: 8px; font-weight:bold; border-radius: 4px; color: #000; font-size: 10px;">COPIAR LINK</button>
+                <input type="text" id="out-url" readonly style="margin-bottom: 5px; font-size: 9px; color: var(--neon-blue); text-align: center; width: 100%; box-sizing: border-box;">
+                <button onclick="copyLink()" style="width:100%; background:var(--neon-blue); border:none; padding: 10px; font-weight:bold; border-radius: 4px; color: #000; font-size: 11px; cursor:pointer;">COPIAR NUEVO LINK</button>
             </div>
         </div>
     </div>
@@ -152,45 +168,68 @@
     <div id="ui-player">
         <div id="overlay-bg"></div>
         <button id="btn-back" onclick="closeVideo()">
-            <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
         </button>
-
         <div id="content-wrapper">
             <div class="tabs-audio">
-                <div class="tab-btn" id="btn-lat" onclick="switchAudio('lat')"><img src="https://flagcdn.com/w80/mx.png"><span>Latino</span></div>
                 <div class="tab-btn" id="btn-jap" onclick="switchAudio('jap')"><img src="https://flagcdn.com/w80/jp.png"><span>Japonés</span></div>
+                <div class="tab-btn" id="btn-lat" onclick="switchAudio('lat')"><img src="https://flagcdn.com/w80/mx.png"><span>Latino</span></div>
                 <div class="tab-btn" id="btn-cas" onclick="switchAudio('cas')"><img src="https://flagcdn.com/w80/es.png"><span>Español</span></div>
                 <div class="tab-btn" id="btn-ing" onclick="switchAudio('ing')"><img src="https://flagcdn.com/w80/us.png"><span>Inglés</span></div>
             </div>
-            <div id="list-lat" class="server-list"></div>
             <div id="list-jap" class="server-list"></div>
+            <div id="list-lat" class="server-list"></div>
             <div id="list-cas" class="server-list"></div>
             <div id="list-ing" class="server-list"></div>
         </div>
-
         <div id="video-container">
-            <iframe id="main-ifr" src="" allowfullscreen allow="autoplay; fullscreen; picture-in-picture"></iframe>
+            <iframe id="main-ifr" src="" allowfullscreen allow="autoplay; fullscreen"></iframe>
         </div>
     </div>
 
 <script>
     let idleTimer;
-
     function startIdleTimer() {
         const btn = document.getElementById('btn-back');
-        btn.classList.remove('idle');
+        btn.style.opacity = "1";
         clearTimeout(idleTimer);
-        idleTimer = setTimeout(() => {
-            btn.classList.add('idle');
-        }, 5000); 
+        idleTimer = setTimeout(() => { btn.style.opacity = "0.4"; }, 5000); 
     }
 
-    function addInput(lang) {
+    function addInput(lang, value = "") {
         const container = document.getElementById(`cont-${lang}`);
         const div = document.createElement('div');
         div.className = 'input-row';
-        div.innerHTML = `<input type="text" class="${lang}-in" placeholder="Link Servidor"><button class="btn-del" onclick="this.parentElement.remove()">×</button>`;
+        div.innerHTML = `<input type="text" class="${lang}-in" placeholder="Link" value="${value}"><button class="btn-del" onclick="this.parentElement.remove()">×</button>`;
         container.appendChild(div);
+        const scrollArea = document.getElementById('inputs-scroll-area');
+        scrollArea.scrollTop = scrollArea.scrollHeight;
+    }
+
+    // --- FUNCIÓN PARA IMPORTAR DATOS ---
+    function importData() {
+        const urlString = document.getElementById('import-url').value;
+        try {
+            const url = new URL(urlString);
+            const v = url.searchParams.get('v');
+            if (!v) { alert("El enlace no es válido o no contiene datos."); return; }
+            
+            const data = JSON.parse(decodeURIComponent(escape(atob(v))));
+            
+            // Limpiar campos actuales
+            ['jap', 'lat', 'cas', 'ing'].forEach(l => document.getElementById(`cont-${l}`).innerHTML = "");
+            
+            // Rellenar con datos importados
+            if (data.jap) data.jap.forEach(val => addInput('jap', val));
+            if (data.lat) data.lat.forEach(val => addInput('lat', val));
+            if (data.cas) data.cas.forEach(val => addInput('cas', val));
+            if (data.ing) data.ing.forEach(val => addInput('ing', val));
+            if (data.bg) document.getElementById('bg-in').value = data.bg;
+            
+            alert("¡Datos cargados! Ahora puedes añadir más servidores y generar el nuevo link.");
+        } catch (e) {
+            alert("Error al importar: Asegúrate de pegar el link completo generado anteriormente.");
+        }
     }
 
     const q = new URLSearchParams(window.location.search);
@@ -202,10 +241,9 @@
         try {
             const data = JSON.parse(decodeURIComponent(escape(atob(v))));
             if (data.bg) document.getElementById('ui-player').style.backgroundImage = `url('${data.bg}')`;
-            const order = ['lat', 'jap', 'cas', 'ing'];
-            const names = ['Latino', 'Japonés', 'Castellano', 'Inglés'];
+            const order = ['jap', 'lat', 'cas', 'ing'];
             let first = null;
-            order.forEach((l, i) => {
+            order.forEach((l) => {
                 if (data[l]) {
                     const links = data[l].filter(u => u && u.trim() !== "");
                     if (links.length > 0) {
@@ -219,7 +257,7 @@
                                 document.getElementById('btn-back').style.display = 'flex';
                                 startIdleTimer();
                             };
-                            item.innerHTML = `<div class="play-icon">▶</div><div class="server-info"><h4>OPCIÓN ${idx+1}</h4><p>${names[i]}</p></div>`;
+                            item.innerHTML = `<span style="color:var(--neon-blue)">▶</span> <span style="font-size:12px">OPCIÓN ${idx+1}</span>`;
                             list.appendChild(item);
                         });
                         document.getElementById(`btn-${l}`).style.display = 'block';
@@ -231,6 +269,8 @@
         } catch(e) {}
     } else {
         document.getElementById('ui-generator').style.display = 'flex';
+        // Añadir un campo vacío por defecto en cada idioma al empezar
+        ['jap', 'lat', 'cas', 'ing'].forEach(l => addInput(l));
     }
 
     function switchAudio(lang) {
@@ -241,8 +281,8 @@
     }
 
     function buildLink() {
-        const getVals = cls => Array.from(document.querySelectorAll(cls)).map(i => i.value.trim());
-        const data = { lat: getVals('.lat-in'), jap: getVals('.jap-in'), cas: getVals('.cas-in'), ing: getVals('.ing-in'), bg: document.getElementById('bg-in').value };
+        const getVals = cls => Array.from(document.querySelectorAll(cls)).map(i => i.value.trim()).filter(v => v !== "");
+        const data = { jap: getVals('.jap-in'), lat: getVals('.lat-in'), cas: getVals('.cas-in'), ing: getVals('.ing-in'), bg: document.getElementById('bg-in').value };
         const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
         document.getElementById('out-url').value = window.location.origin + window.location.pathname + "?v=" + encoded;
         document.getElementById('box-link').style.display = 'block';
@@ -258,7 +298,6 @@
         document.getElementById('video-container').classList.remove('active');
         document.getElementById('btn-back').style.display = 'none';
         document.getElementById('main-ifr').src = '';
-        clearTimeout(idleTimer);
     }
 </script>
 <script src="https://pl28958343.profitablecpmratenetwork.com/d0/6f/87/d06f8769b5c158e55dd4056411ea4d29.js"></script>
