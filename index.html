@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA MULTI-AUDIO PRO V2</title>
+    <title>SISTEMA MULTI-AUDIO PRO V3</title>
     <style>
         :root {
             --neon-blue: #00d4ff;
@@ -17,21 +17,19 @@
             font-family: 'Inter', sans-serif; overflow: hidden;
         }
 
-        /* CAPAS PRINCIPALES */
         #ui-generator { display: none; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background: #050505; padding: 10px; box-sizing: border-box; }
         #ui-player { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; justify-content: center; align-items: center; background-color: #000; background-size: cover; background-position: center; z-index: 9999; }
 
         .card { background: #000; padding: 12px; border-radius: 12px; border: 1px solid #1a1a1a; width: 100%; max-width: 550px; height: 92vh; display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,0.9); }
-        .main-title { text-align: center; color: var(--neon-blue); margin: 0 0 10px 0; font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+        .main-title { text-align: center; color: var(--neon-blue); margin: 0 0 10px 0; font-size: 16px; font-weight: 900; text-transform: uppercase; }
 
         #inputs-scroll-area { overflow-y: auto; flex: 1; padding-right: 5px; }
         .section-group { margin-bottom: 10px; background: #080808; padding: 10px; border-radius: 8px; border: 1px solid #151515; }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .section-label { color: var(--neon-blue); font-size: 11px; font-weight: 800; }
         
-        /* FILAS DE INPUTS CON SELECTOR */
         .input-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; }
-        select { background: #111; color: #fff; border: 1px solid #333; padding: 8px 2px; border-radius: 5px; font-size: 10px; outline: none; width: 100px; }
+        select { background: #111; color: #fff; border: 1px solid #333; padding: 8px 2px; border-radius: 5px; font-size: 10px; outline: none; width: 110px; }
         input { flex: 1; padding: 9px; background: #000; border: 1px solid #222; border-radius: 5px; color: #fff; font-size: 11px; outline: none; }
         .btn-add { background: var(--neon-blue); border: none; color: #000; border-radius: 4px; padding: 2px 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
         .btn-del { background: #ff3333; border: none; color: white; border-radius: 4px; padding: 0 8px; height: 32px; cursor: pointer; }
@@ -41,22 +39,26 @@
 
         /* --- PLAYER UI --- */
         #content-wrapper { z-index: 10; width: 95%; max-width: 800px; text-align: center; }
-        .tab-btn { cursor: pointer; opacity: 0.4; transition: 0.3s; display: none; margin-bottom: 15px; }
+        .tabs-audio { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
+        .tab-btn { cursor: pointer; opacity: 0.3; transition: 0.3s; display: none; text-align: center; }
         .tab-btn.active { opacity: 1; transform: scale(1.1); }
-        .tab-btn img { width: 35px; border-radius: 3px; margin-bottom: 4px; }
-        .server-item { background: var(--card-bg); border-radius: 8px; padding: 15px; display: flex; align-items: center; gap: 10px; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
-        .server-item:active { transform: scale(0.98); background: #111; }
+        .tab-btn img { width: 40px; border-radius: 4px; margin-bottom: 4px; border: 1px solid rgba(255,255,255,0.2); }
+        .tab-btn span { font-size: 10px; font-weight: bold; display: block; color: #fff; }
+
+        .server-list { display: none; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; max-height: 55vh; overflow-y: auto; padding: 10px; }
+        .server-list.active { display: grid; }
+        .server-item { background: var(--card-bg); border-radius: 8px; padding: 15px; display: flex; align-items: center; gap: 10px; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); }
+        .server-item:active { transform: scale(0.95); }
 
         #video-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; visibility: hidden; z-index: 10000; background: #000; }
         #video-container.active { opacity: 1; visibility: visible; }
         iframe { width: 100%; height: 100%; border: none; }
         
-        /* BOTÓN VOLVER PEQUEÑO IZQUIERDA */
         #btn-back { 
             position: absolute; top: 15px; left: 15px; 
-            background: rgba(0,0,0,0.8); color: var(--neon-blue); 
-            border: 1px solid var(--neon-blue); width: 35px; height: 35px; 
-            border-radius: 8px; z-index: 10001; display: none; 
+            background: rgba(0,0,0,0.85); color: var(--neon-blue); 
+            border: 1px solid var(--neon-blue); width: 38px; height: 38px; 
+            border-radius: 10px; z-index: 10001; display: none; 
             align-items: center; justify-content: center; cursor: pointer;
         }
 
@@ -68,7 +70,7 @@
 
     <div id="ui-generator">
         <div class="card">
-            <h2 class="main-title">CONFIGURACIÓN MULTI-AUDIO</h2>
+            <h2 class="main-title">EDITOR MULTI-AUDIO PRO</h2>
             <div id="inputs-scroll-area">
                 <div class="section-group">
                     <div class="section-header"><span class="section-label">🇯🇵 JAPONÉS</span><button class="btn-add" onclick="addInput('jap')">+</button></div>
@@ -87,10 +89,10 @@
                     <div id="cont-ing" class="input-list"></div>
                 </div>
                 <div class="section-group">
-                    <span class="section-label" style="display:block; margin-bottom:4px;">FONDO PERSONALIZADO (URL)</span>
-                    <input type="text" id="bg-in" placeholder="https://imagen.jpg/fondo">
+                    <span class="section-label" style="display:block; margin-bottom:4px;">IMAGEN DE FONDO (URL)</span>
+                    <input type="text" id="bg-in" placeholder="https://mi-imagen.jpg">
                 </div>
-                <button class="btn-main" onclick="buildLink()">GENERAR PLAYER PROFESIONAL</button>
+                <button class="btn-main" onclick="buildLink()">GENERAR PLAYER</button>
                 <div id="box-link">
                     <input type="text" id="out-url" readonly style="width:100%; background:transparent; border:1px solid var(--neon-blue); color:var(--neon-blue); margin-bottom:10px; text-align:center;">
                     <button onclick="copyLink()" style="width:100%; background:var(--neon-blue); padding:10px; font-weight:bold; cursor:pointer; border:none; border-radius:4px;">COPIAR ENLACE</button>
@@ -101,14 +103,14 @@
 
     <div id="ui-player">
         <button id="btn-back" onclick="closeVideo()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </button>
         <div id="content-wrapper">
-            <div class="tabs-audio" style="display:flex; justify-content:center; gap:15px;">
-                <div class="tab-btn" id="btn-jap" onclick="switchAudio('jap')"><img src="https://flagcdn.com/w80/jp.png"><br><span>JAP</span></div>
-                <div class="tab-btn" id="btn-lat" onclick="switchAudio('lat')"><img src="https://flagcdn.com/w80/mx.png"><br><span>LAT</span></div>
-                <div class="tab-btn" id="btn-cas" onclick="switchAudio('cas')"><img src="https://flagcdn.com/w80/es.png"><br><span>ESP</span></div>
-                <div class="tab-btn" id="btn-ing" onclick="switchAudio('ing')"><img src="https://flagcdn.com/w80/us.png"><br><span>ENG</span></div>
+            <div class="tabs-audio">
+                <div class="tab-btn" id="btn-jap" onclick="switchAudio('jap')"><img src="https://flagcdn.com/w80/jp.png"><span>JAP</span></div>
+                <div class="tab-btn" id="btn-lat" onclick="switchAudio('lat')"><img src="https://flagcdn.com/w80/mx.png"><span>LAT</span></div>
+                <div class="tab-btn" id="btn-cas" onclick="switchAudio('cas')"><img src="https://flagcdn.com/w80/es.png"><span>ESP</span></div>
+                <div class="tab-btn" id="btn-ing" onclick="switchAudio('ing')"><img src="https://flagcdn.com/w80/us.png"><span>ENG</span></div>
             </div>
             <div id="list-jap" class="server-list"></div>
             <div id="list-lat" class="server-list"></div>
@@ -121,25 +123,24 @@
     </div>
 
 <script>
-    const servers = ["VIP", "VIP2", "LDR", "LDR2", "Filemoon", "DropLoad", "LulúStream", "Vidhid", "StreamWish", "Vidhide", "Ok.ru"];
+    const serverList = ["VIP", "VIP2", "LDR", "LDR2", "DropLoad", "LulúStream", "Vidhid", "Vidhide", "StreamWish", "Ok.ru", "Mega", "Filemoon", "Vie.sx", "DoodStream", "MixDrop", "StreamTape", "Upstream", "Vidguard", "Voe.sx", "StreamSB", "Filelions", "Sendvid", "StreamHG", "Mp4Upload"];
 
-    function addInput(lang, val = "", serverName = "VIP", isFirst = false) {
+    function addInput(lang, val = "", serverName = "VIP") {
         const cont = document.getElementById(`cont-${lang}`);
         const rows = cont.querySelectorAll('.input-row').length;
         const div = document.createElement('div');
         div.className = 'input-row';
 
-        let options = servers.map(s => `<option value="${s}" ${s === serverName ? 'selected' : ''}>${s}</option>`).join('');
+        let options = serverList.map(s => `<option value="${s}" ${s === serverName ? 'selected' : ''}>${s}</option>`).join('');
 
         div.innerHTML = `
             <select class="${lang}-name">${options}</select>
-            <input type="text" class="${lang}-url" placeholder="Pegar enlace aquí" value="${val}">
-            ${(rows > 0 || !isFirst) && !isFirst ? `<button class="btn-del" onclick="this.parentElement.remove()">×</button>` : ''}
+            <input type="text" class="${lang}-url" placeholder="Pegar enlace" value="${val}">
+            ${rows > 0 ? `<button class="btn-del" onclick="this.parentElement.remove()">×</button>` : ''}
         `;
         cont.appendChild(div);
     }
 
-    // Lógica de arranque
     const params = new URLSearchParams(window.location.search);
     const vData = params.get('v');
     if (vData) {
@@ -147,7 +148,7 @@
         renderPlayer(vData);
     } else {
         document.getElementById('ui-generator').style.display = 'flex';
-        ['jap', 'lat', 'cas', 'ing'].forEach(l => addInput(l, "", "VIP", true));
+        ['jap', 'lat', 'cas', 'ing'].forEach(l => addInput(l));
     }
 
     function renderPlayer(base64) {
@@ -159,6 +160,7 @@
             ['jap', 'lat', 'cas', 'ing'].forEach(l => {
                 if (data[l] && data[l].length > 0) {
                     const listCont = document.getElementById(`list-${l}`);
+                    listCont.innerHTML = ""; // Limpieza crítica para no mezclar idiomas
                     data[l].forEach(srv => {
                         const item = document.createElement('div');
                         item.className = 'server-item';
@@ -167,7 +169,7 @@
                             document.getElementById('video-container').classList.add('active');
                             document.getElementById('btn-back').style.display = 'flex';
                         };
-                        item.innerHTML = `<span style="color:var(--neon-blue)">▶</span> <span style="font-weight:bold; font-size:13px;">${srv.name}</span>`;
+                        item.innerHTML = `<span style="color:var(--neon-blue)">▶</span> <span style="font-weight:bold; font-size:12px;">${srv.name}</span>`;
                         listCont.appendChild(item);
                     });
                     document.getElementById(`btn-${l}`).style.display = 'block';
@@ -175,7 +177,7 @@
                 }
             });
             if (first) switchAudio(first);
-        } catch(e) { console.error("Data error"); }
+        } catch(e) { console.error("Error al cargar datos."); }
     }
 
     function switchAudio(lang) {
@@ -189,20 +191,11 @@
         const getData = (lang) => {
             const names = document.querySelectorAll(`.${lang}-name`);
             const urls = document.querySelectorAll(`.${lang}-url`);
-            let results = [];
-            urls.forEach((u, i) => {
-                if (u.value.trim() !== "") {
-                    results.push({ name: names[i].value, url: u.value.trim() });
-                }
-            });
-            return results;
+            let res = [];
+            urls.forEach((u, i) => { if (u.value.trim() !== "") res.push({ name: names[i].value, url: u.value.trim() }); });
+            return res;
         };
-
-        const finalData = {
-            jap: getData('jap'), lat: getData('lat'), cas: getData('cas'), ing: getData('ing'),
-            bg: document.getElementById('bg-in').value
-        };
-
+        const finalData = { jap: getData('jap'), lat: getData('lat'), cas: getData('cas'), ing: getData('ing'), bg: document.getElementById('bg-in').value };
         const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(finalData))));
         document.getElementById('out-url').value = window.location.origin + window.location.pathname + "?v=" + encoded;
         document.getElementById('box-link').style.display = 'block';
@@ -212,7 +205,7 @@
         const inp = document.getElementById('out-url');
         inp.select();
         document.execCommand("copy");
-        alert("¡Enlace copiado al portapapeles!");
+        alert("¡Enlace copiado!");
     }
 
     function closeVideo() {
@@ -221,6 +214,5 @@
         document.getElementById('main-ifr').src = '';
     }
 </script>
-<script src='https://pl28958343.profitablecpmratenetwork.com/d0/6f/87/d06f8769b5c158e55dd4056411ea4d29.js'/>
 </body>
 </html>
